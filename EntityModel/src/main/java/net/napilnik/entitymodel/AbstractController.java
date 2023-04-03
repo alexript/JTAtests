@@ -7,6 +7,11 @@ package net.napilnik.entitymodel;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.Parameter;
+import jakarta.persistence.TypedQuery;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -69,7 +74,7 @@ public class AbstractController<ENTITY, PKCLASS> implements AutoCloseable {
         }
         return true;
     }
-    
+
     public final ENTITY find(Class<ENTITY> entityClass, PKCLASS pk) {
         try {
             return em.find(entityClass, pk);
@@ -77,6 +82,20 @@ public class AbstractController<ENTITY, PKCLASS> implements AutoCloseable {
             sqlError(ex);
         }
         return null;
+    }
+
+    public final List<ENTITY> query(String queryName, Class<ENTITY> entityClass, Object... params) {
+        TypedQuery<ENTITY> nq = em.createNamedQuery(queryName, entityClass);
+        
+        Set<Parameter<?>> qParams = nq.getParameters();
+        
+        if (params != null && params.length == qParams.size()) {
+            Parameter[] qpArray = qParams.toArray(new Parameter[params.length]);
+            for (int i = 0; i < params.length; i++) {
+                nq.setParameter(qpArray[i].getName(), params[i]);
+            }
+        }
+        return nq.getResultList();
     }
 
     protected void sqlError(Exception ex) {

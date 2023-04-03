@@ -26,8 +26,8 @@ import java.util.HashSet;
  */
 @Entity
 @Table(name = "documents")
-@NamedQuery(name = "GetChilds", query = "SELECT d FROM Document d WHERE :doc = d.parentDocuments")
-@NamedQuery(name = "GetParents", query = "SELECT d FROM Document d WHERE :doc = d.childDocuments")
+@NamedQuery(name = "GetChilds", query = "SELECT d FROM Document d WHERE d.parentDocuments = :doc")
+@NamedQuery(name = "GetParents", query = "SELECT d FROM Document d WHERE d.childDocuments = :doc")
 public class Document implements Serializable {
 
     @Id

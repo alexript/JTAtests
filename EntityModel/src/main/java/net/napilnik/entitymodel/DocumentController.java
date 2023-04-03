@@ -5,6 +5,7 @@
 package net.napilnik.entitymodel;
 
 import jakarta.persistence.EntityManagerFactory;
+import java.util.List;
 
 /**
  *
@@ -14,6 +15,14 @@ public class DocumentController extends AbstractController<Document, Long> {
 
     public DocumentController(EntityManagerFactory emf) {
         super(emf);
+    }
+    
+    public List<Document> getChilds(Document doc) {
+        return query("GetChilds", Document.class, doc);
+    }
+    
+    public List<Document> getParents(Document doc) {
+        return query("GetParents", Document.class, doc);
     }
 
 }

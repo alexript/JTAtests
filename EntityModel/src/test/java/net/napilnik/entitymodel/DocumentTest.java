@@ -6,13 +6,14 @@ package net.napilnik.entitymodel;
 
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
+import java.util.Collection;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.DisplayName;
 
 /**
  *
@@ -98,4 +99,75 @@ public class DocumentTest {
         }
     }
 
+    @Test
+    public void testCreateChilds() {
+        printTestHeader("testCreateChilds");
+        Document parentDoc = new Document("parent");
+        Document childDoc = new Document("child");
+
+        try (DocumentController c = new DocumentController(emf)) {
+            c.create(parentDoc);
+            c.create(childDoc);
+            childDoc.addParentDocument(parentDoc);
+            boolean result = c.update(childDoc);
+            assertTrue(result);
+        } catch (Exception ex) {
+            fail(ex);
+        }
+    }
+
+    @Test
+    public void testFindChilds() {
+        printTestHeader("testFindChilds");
+        Document parentDoc = new Document("parent");
+        Document childDoc = new Document("child");
+
+        try (DocumentController c = new DocumentController(emf)) {
+            c.create(parentDoc);
+            c.create(childDoc);
+            childDoc.addParentDocument(parentDoc);
+            c.update(childDoc);
+
+            Collection<Document> expected = parentDoc.getChildDocuments();
+            List<Document> result = c.getChilds(parentDoc);
+            assertIterableEquals(expected, result);
+        } catch (Exception ex) {
+            fail(ex);
+        }
+    }
+
+    @Test
+    public void testFindChildsInNewEM() {
+        printTestHeader("testFindChildsInNewEM");
+        Document parentDoc = new Document("parent");
+        Document childDoc = new Document("child");
+        Collection<Document> expected = null;
+        Long parentId = null;
+        Long childId = null;
+
+        try (DocumentController c = new DocumentController(emf)) {
+            c.create(parentDoc);
+            c.create(childDoc);
+            childDoc.addParentDocument(parentDoc);
+            c.update(childDoc);
+            childId = childDoc.getId();
+            parentId = parentDoc.getId();
+            expected = parentDoc.getChildDocuments();
+            assertFalse(expected.isEmpty());
+        } catch (Exception ex) {
+            fail(ex);
+        }
+
+        try (DocumentController c = new DocumentController(emf)) {
+            Document foundParent = c.find(Document.class, parentId);
+            Collection<Document> result = foundParent.getChildDocuments();
+            assertFalse(result.isEmpty());
+            assertIterableEquals(expected, result);
+            Document[] childArray = result.toArray(Document[]::new);
+            assertEquals(childId, childArray[0].getId());
+        } catch (Exception ex) {
+            fail(ex);
+        }
+
+    }
 }
