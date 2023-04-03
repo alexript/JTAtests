@@ -12,12 +12,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.DisplayName;
 
 /**
  *
  * @author alexript
  */
-
 public class DocumentTest {
 
     private static EntityManagerFactory emf;
@@ -40,11 +40,59 @@ public class DocumentTest {
     public void tearDown() {
     }
 
+    private static void printTestHeader(String name) {
+        System.out.println("---- " + name + " -----------------");
+    }
+
     @Test
-    public void testSomeMethod() {
-        Document doc = new Document("test");
+    public void testCreate() {
+        printTestHeader("testCreate");
+        Document doc = new Document("testCreate");
+        try (DocumentController c = new DocumentController(emf)) {
+            boolean result = c.create(doc);
+            assertTrue(result);
+        } catch (Exception ex) {
+            fail(ex);
+        }
+    }
+
+    @Test
+    public void testDelete() {
+        printTestHeader("testDelete");
+        Document doc = new Document("testDelete");
         try (DocumentController c = new DocumentController(emf)) {
             c.create(doc);
+            boolean result = c.delete(doc);
+            assertTrue(result);
+        } catch (Exception ex) {
+            fail(ex);
+        }
+    }
+
+    @Test
+    public void testUpdate() {
+        printTestHeader("testUpdate");
+        Document doc = new Document("testUpdate");
+        try (DocumentController c = new DocumentController(emf)) {
+            c.create(doc);
+            doc.setCode("testUpdate2");
+            boolean result = c.update(doc);
+            assertTrue(result);
+        } catch (Exception ex) {
+            fail(ex);
+        }
+    }
+
+    @Test
+    public void testFind() {
+        printTestHeader("testFind");
+        Document doc = new Document("testFind");
+        try (DocumentController c = new DocumentController(emf)) {
+            c.create(doc);
+            Long id = doc.getId();
+
+            Document found = c.find(Document.class, id);
+            assertNotNull(found);
         } catch (Exception ex) {
             fail(ex);
         }

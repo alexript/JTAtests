@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  * @author alexript
  * @param <ENTITY>
  */
-public class AbstractController<ENTITY> implements AutoCloseable {
+public class AbstractController<ENTITY, PKCLASS> implements AutoCloseable {
 
     private final EntityManager em;
 
@@ -28,7 +28,7 @@ public class AbstractController<ENTITY> implements AutoCloseable {
         em.close();
     }
 
-    public void create(ENTITY entity) {
+    public final boolean create(ENTITY entity) {
         EntityTransaction tr = em.getTransaction();
         try {
             tr.begin();
@@ -36,8 +36,51 @@ public class AbstractController<ENTITY> implements AutoCloseable {
             tr.commit();
         } catch (Exception ex) {
             tr.rollback();
-            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
+            sqlError(ex);
+            return false;
         }
+        return true;
+    }
+
+    public final boolean delete(ENTITY entity) {
+        EntityTransaction tr = em.getTransaction();
+        try {
+            tr.begin();
+            em.remove(entity);
+            tr.commit();
+        } catch (Exception ex) {
+            tr.rollback();
+            sqlError(ex);
+            return false;
+        }
+        return true;
+    }
+
+    public final boolean update(ENTITY entity) {
+        EntityTransaction tr = em.getTransaction();
+        try {
+            tr.begin();
+            em.merge(entity);
+            tr.commit();
+        } catch (Exception ex) {
+            tr.rollback();
+            sqlError(ex);
+            return false;
+        }
+        return true;
+    }
+    
+    public final ENTITY find(Class<ENTITY> entityClass, PKCLASS pk) {
+        try {
+            return em.find(entityClass, pk);
+        } catch (Exception ex) {
+            sqlError(ex);
+        }
+        return null;
+    }
+
+    protected void sqlError(Exception ex) {
+        Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
     }
 
 }

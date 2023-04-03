@@ -10,7 +10,7 @@ import jakarta.persistence.EntityManagerFactory;
  *
  * @author alexript
  */
-public class DocumentController extends AbstractController<Document> {
+public class DocumentController extends AbstractController<Document, Long> {
 
     public DocumentController(EntityManagerFactory emf) {
         super(emf);
