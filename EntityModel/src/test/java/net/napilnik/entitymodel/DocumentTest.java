@@ -25,7 +25,7 @@ public class DocumentTest {
 
     @BeforeAll
     public static void setUpClass() {
-        emf = Persistence.createEntityManagerFactory("model");
+        emf = Persistence.createEntityManagerFactory("model-unit-tests");
     }
 
     @AfterAll
