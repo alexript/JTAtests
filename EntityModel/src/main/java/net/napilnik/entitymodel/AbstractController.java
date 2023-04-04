@@ -1,6 +1,17 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ * Copyright 2023 malyshev.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package net.napilnik.entitymodel;
 
@@ -8,31 +19,84 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Parameter;
+import jakarta.persistence.Persistence;
 import jakarta.persistence.TypedQuery;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Basic CRUD operations for all entity controllers.
  *
  * @author alexript
- * @param <ENTITY>
+ * @param <ENTITY> @Entity class
+ * @param <PKCLASS> PrimaryKey class for @Entity class
  */
-public class AbstractController<ENTITY, PKCLASS> implements AutoCloseable {
+public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseable {
 
+    /**
+     * Working EntityManager instance.
+     */
     private final EntityManager em;
 
+    /**
+     * Working EntityManagerFactory instance.
+     */
+    private final EntityManagerFactory emf;
+
+    /**
+     * Flag: true when emf created inside this object, false when emf created
+     * outside this object.
+     */
+    private boolean incapsulatedEMF;
+
+    /**
+     * Create CRUD controller on existed EntityManagerFactory.
+     *
+     * @param emf EntityManagerFactory instance;
+     * @throws NullPointerException when emf is null
+     */
     public AbstractController(EntityManagerFactory emf) {
+        if (emf == null) {
+            throw new NullPointerException("EntityManagerFactory is null");
+        }
+        this.emf = emf;
         this.em = emf.createEntityManager();
+        this.incapsulatedEMF = false;
     }
 
+    /**
+     * Create CRUD controller by PersistenceUnit name.
+     *
+     * @param puName PersistenceUnit name
+     */
+    public AbstractController(String puName) {
+        this(Persistence.createEntityManagerFactory(puName));
+        this.incapsulatedEMF = true;
+    }
+
+    /**
+     * Implements AutoCloseable interface. When closed: close em and (when emf
+     * incapsulated inside this object) emf objects.
+     */
     @Override
-    public void close() throws Exception {
-        em.close();
+    public void close() {
+        if (em != null) {
+            em.close();
+        }
+        if (incapsulatedEMF && emf != null) {
+            emf.close();
+        }
     }
 
+    /**
+     * Persist @Entity object.
+     *
+     * @param entity @Entity object
+     * @return true on success
+     */
     public final boolean create(ENTITY entity) {
         EntityTransaction tr = em.getTransaction();
         try {
@@ -47,6 +111,12 @@ public class AbstractController<ENTITY, PKCLASS> implements AutoCloseable {
         return true;
     }
 
+    /**
+     * Remove persisted @Entity object.
+     *
+     * @param entity persisted @Entity object
+     * @return true on success
+     */
     public final boolean delete(ENTITY entity) {
         EntityTransaction tr = em.getTransaction();
         try {
@@ -61,6 +131,12 @@ public class AbstractController<ENTITY, PKCLASS> implements AutoCloseable {
         return true;
     }
 
+    /**
+     * Merge persisted @Entity object.
+     *
+     * @param entity persisted @Entity object
+     * @return true on success
+     */
     public final boolean update(ENTITY entity) {
         EntityTransaction tr = em.getTransaction();
         try {
@@ -75,7 +151,14 @@ public class AbstractController<ENTITY, PKCLASS> implements AutoCloseable {
         return true;
     }
 
-    public final ENTITY find(Class<ENTITY> entityClass, PKCLASS pk) {
+    /**
+     * Find persisted @Entity object by PrimaryKey value.
+     *
+     * @param entityClass class of @Entity object
+     * @param pk PrimaryKey value
+     * @return found @Entity object or null
+     */
+    protected final ENTITY find(Class<ENTITY> entityClass, PKCLASS pk) {
         try {
             return em.find(entityClass, pk);
         } catch (Exception ex) {
@@ -84,20 +167,56 @@ public class AbstractController<ENTITY, PKCLASS> implements AutoCloseable {
         return null;
     }
 
-    public final List<ENTITY> query(String queryName, Class<ENTITY> entityClass, Object... params) {
+    /**
+     * Find persisted @Entity object by PrimaryKey value. Simplified signature
+     * for ENTITY find(Class&lt;ENTITY&gt; entityClass, PKCLASS) pk). Must be
+     * Overrided in extended classes.
+     *
+     * @param pk PrimaryKey value
+     * @return found @Entity object or null
+     */
+    public abstract ENTITY find(PKCLASS pk);
+
+    /**
+     * Find List of @Entity objects by NamedQuery.
+     *
+     * @param queryName NamedQuery name
+     * @param entityClass @Entity class
+     * @param parameters query parameters values map. Key -- parameter name,
+     * value -- value
+     * @return List of @Entity objects
+     */
+    protected final List<ENTITY> query(String queryName, Class<ENTITY> entityClass, Map<String, Object> parameters) {
         TypedQuery<ENTITY> nq = em.createNamedQuery(queryName, entityClass);
-        
+
         Set<Parameter<?>> qParams = nq.getParameters();
-        
-        if (params != null && params.length == qParams.size()) {
-            Parameter[] qpArray = qParams.toArray(new Parameter[params.length]);
-            for (int i = 0; i < params.length; i++) {
-                nq.setParameter(qpArray[i].getName(), params[i]);
-            }
+
+        if (parameters != null && parameters.size() == qParams.size()) {
+            parameters.forEach((key, value) -> {
+                nq.setParameter(key, value);
+            });
         }
         return nq.getResultList();
     }
 
+    /**
+     * Find List of @Entity objects by NamedQuery. Simplified signature for
+     * List&lt;ENTITY&gt; query(String queryName, Class&lt;ENTITY&gt;
+     * entityClass, Map&lt;String, Object&gt; parameters). Must be Overrided in
+     * extended classes.
+     *
+     * @param queryName NamedQuery name
+     * @param parameters query parameters values map. Key -- parameter name,
+     * value -- value
+     * @return List of @Entity objects
+     */
+    public abstract List<ENTITY> query(String queryName, Map<String, Object> parameters);
+
+    /**
+     * Universal SQL Errors logger for all controllers.
+     *
+     * @param ex Exception
+     */
     protected void sqlError(Exception ex) {
         Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
     }

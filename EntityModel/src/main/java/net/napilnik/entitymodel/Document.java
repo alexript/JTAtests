@@ -1,6 +1,17 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ * Copyright 2023 malyshev.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package net.napilnik.entitymodel;
 
@@ -30,6 +41,8 @@ import java.util.HashSet;
 @NamedQuery(name = "GetParents", query = "SELECT d FROM Document d WHERE d.childDocuments = :doc")
 public class Document implements Serializable {
 
+    private static final long serialVersionUID = -4704534697859793297L;
+
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -55,41 +68,41 @@ public class Document implements Serializable {
     private Collection<Document> childDocuments;
 
     public Document() {
-        
+
     }
-    
+
     public Document(String code) {
         setCode(code);
     }
 
-    //<editor-fold defaultstate="collapsed" desc="Getters and Setters">
+//<editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Long getId() {
         return id;
     }
-    
+
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public String getCode() {
         return code;
     }
-    
+
     public final void setCode(String code) {
         this.code = code;
     }
-    
+
     public Collection<Document> getParentDocuments() {
         if (parentDocuments == null) {
             parentDocuments = new HashSet<>();
         }
         return parentDocuments;
     }
-    
+
     public void setParentDocuments(Collection<Document> parentDocuments) {
         this.parentDocuments = parentDocuments;
     }
-    
+
     public void addParentDocument(Document doc) {
         if (this.parentDocuments == null) {
             this.parentDocuments = new HashSet<>();
@@ -99,18 +112,18 @@ public class Document implements Serializable {
             doc.addChildDocument(this);
         }
     }
-    
+
     public Collection<Document> getChildDocuments() {
         if (childDocuments == null) {
             childDocuments = new HashSet<>();
         }
         return childDocuments;
     }
-    
+
     public void setChildDocuments(Collection<Document> childDocuments) {
         this.childDocuments = childDocuments;
     }
-    
+
     public void addChildDocument(Document doc) {
         if (this.childDocuments == null) {
             this.childDocuments = new HashSet<>();
