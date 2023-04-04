@@ -36,7 +36,7 @@ public class Client {
         try (DocumentController c = new DocumentController(emf)) {
             while (true) {
 
-                Document d = new Document(Long.toString(new Date().getTime()));
+                Document d = new Document("doc.random", Long.toString(new Date().getTime()));
                 c.create(d);
                 Long id = d.getId();
                 Thread.sleep(200);

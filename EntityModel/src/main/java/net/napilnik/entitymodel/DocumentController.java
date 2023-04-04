@@ -26,6 +26,7 @@ import java.util.Map;
  */
 public class DocumentController extends AbstractController<Document, Long> {
 
+//<editor-fold defaultstate="collapsed" desc="boring constructors">
     public DocumentController(EntityManagerFactory emf) {
         super(emf);
     }
@@ -33,19 +34,61 @@ public class DocumentController extends AbstractController<Document, Long> {
     public DocumentController(String puName) {
         super(puName);
     }
+//</editor-fold>
 
-    public List<Document> getChilds(Document doc) {
+    /**
+     * Get child documents.
+     *
+     * @param parent parent document
+     * @return List of Document
+     */
+    public List<Document> getChildren(Document parent) {
         Map<String, Object> params = new HashMap<>();
-        params.put("doc", doc);
-        return query("GetChilds", params);
+        params.put("doc", parent);
+        return query("GetChildren", params);
     }
 
-    public List<Document> getParents(Document doc) {
+    /**
+     * Get parent documents.
+     *
+     * @param child child document
+     * @return List of Document
+     */
+    public List<Document> getParents(Document child) {
         Map<String, Object> params = new HashMap<>();
-        params.put("doc", doc);
+        params.put("doc", child);
         return query("GetParents", params);
     }
 
+    /**
+     * Get child documents filtered by child mnemo.
+     *
+     * @param parent parent document
+     * @param childMnemo child menmo
+     * @return List of Document
+     */
+    public List<Document> getChildren(Document parent, String childMnemo) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("doc", parent);
+        params.put("mnemo", childMnemo);
+        return query("GetChildrenWithMnemo", params);
+    }
+
+    /**
+     * Get parent documents filtered by parent mnemo.
+     *
+     * @param child child document
+     * @param parentMnemo parent mnemo
+     * @return List of Document
+     */
+    public List<Document> getParents(Document child, String parentMnemo) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("doc", child);
+        params.put("mnemo", parentMnemo);
+        return query("GetParentsWithMnemo", params);
+    }
+
+//<editor-fold defaultstate="collapsed" desc="interface implementation">
     @Override
     public Document find(Long pk) {
         return find(Document.class, pk);
@@ -55,5 +98,6 @@ public class DocumentController extends AbstractController<Document, Long> {
     public List<Document> query(String queryName, Map<String, Object> parameters) {
         return query(queryName, Document.class, parameters);
     }
+//</editor-fold>
 
 }

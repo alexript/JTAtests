@@ -23,6 +23,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -30,28 +31,55 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.regex.Pattern;
 
 /**
+ * Some kind of Document. menmo -- mnemonics of document type. code -- unique
+ * alpha-numeric document code. each document can have any number of parent and
+ * child documents
  *
  * @author alexript
  */
 @Entity
-@Table(name = "documents")
-@NamedQuery(name = "GetChilds", query = "SELECT d FROM Document d WHERE d.parentDocuments = :doc")
+@Table(
+        name = "documents",
+        indexes = {
+            @Index(columnList = "mnemo")
+        }
+)
+@NamedQuery(name = "GetChildren", query = "SELECT d FROM Document d WHERE d.parentDocuments = :doc")
 @NamedQuery(name = "GetParents", query = "SELECT d FROM Document d WHERE d.childDocuments = :doc")
+@NamedQuery(name = "GetChildrenWithMnemo", query = "SELECT d FROM Document d WHERE d.parentDocuments = :doc AND d.mnemo = :mnemo")
+@NamedQuery(name = "GetParentsWithMnemo", query = "SELECT d FROM Document d WHERE d.childDocuments = :doc AND d.mnemo = :mnemo")
 public class Document implements Serializable {
 
     private static final long serialVersionUID = -4704534697859793297L;
 
+    /**
+     * PrimaryKey.
+     */
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    /**
+     * Document type mnemonic.
+     */
+    @Basic
+    @Column(name = "mnemo", length = 50, nullable = false)
+    private String mnemo;
+
+    /**
+     * Document alpha-numeric code.
+     */
     @Basic
     @Column(name = "code", length = 25, nullable = false)
     private String code;
 
+    /**
+     * Collection of parent documents.
+     */
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "doclinks",
@@ -64,6 +92,9 @@ public class Document implements Serializable {
     )
     private Collection<Document> parentDocuments;
 
+    /**
+     * Collection of child documents.
+     */
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "parentDocuments")
     private Collection<Document> childDocuments;
 
@@ -71,7 +102,8 @@ public class Document implements Serializable {
 
     }
 
-    public Document(String code) {
+    public Document(String mnemo, String code) {
+        setMnemo(mnemo);
         setCode(code);
     }
 
@@ -88,7 +120,18 @@ public class Document implements Serializable {
         return code;
     }
 
-    public final void setCode(String code) {
+    private static final String CODEMASK = "[a-zA-Z0-9\\-_]+";
+
+    /**
+     * Set Document code.
+     *
+     * @param code AlphaNumeric code. Also accepts '-' and '_'.
+     * @throws IllegalArgumentException if code is not matches rule.
+     */
+    public final void setCode(String code) throws IllegalArgumentException {
+        if (!code.matches(CODEMASK)) {
+            throw new IllegalArgumentException("Document code agreements violation: code is '%s'. Expected format: '%s'.".formatted(code, CODEMASK));
+        }
         this.code = code;
     }
 
@@ -132,6 +175,14 @@ public class Document implements Serializable {
         if (!doc.getParentDocuments().contains(this)) {
             doc.addParentDocument(this);
         }
+    }
+
+    public String getMnemo() {
+        return mnemo;
+    }
+
+    public final void setMnemo(String mnemo) {
+        this.mnemo = mnemo;
     }
 //</editor-fold>
 
