@@ -28,7 +28,7 @@ import javax.swing.text.Document;
 class DocumentPrintStream extends PrintStream {
 
     private final Document document;
-    private static final boolean PASS_TO_DELEGATE = true;
+    private static final boolean PASS_TO_DELEGATE = false;
     private static final Object sync = new Object();
     private final JScrollBar vScroll;
 

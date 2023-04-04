@@ -16,9 +16,9 @@
 package net.napilnik.client;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.Objects;
 import org.eclipse.persistence.exceptions.ValidationException;
 import org.eclipse.persistence.internal.helper.Helper;
 import org.eclipse.persistence.logging.AbstractSessionLog;
@@ -30,8 +30,11 @@ import org.eclipse.persistence.logging.SessionLogEntry;
  */
 public class UILogger extends AbstractSessionLog {
 
-    private static PrintStream stream;
-    private static PrintWriter printWriter;
+    private static LoggerDispatcher dispatcher;
+
+    static void setDispatcher(LoggerDispatcher logDispatcher) {
+        dispatcher = logDispatcher;
+    }
 
     public UILogger() {
         super();
@@ -55,23 +58,27 @@ public class UILogger extends AbstractSessionLog {
 
     @Override
     public void log(SessionLogEntry entry) {
-        if (stream != null) {
-            if (!shouldLog(entry.getLevel(), entry.getNameSpace())) {
+        if (dispatcher != null) {
+            final String nameSpace = entry.getNameSpace();
+            final int entryLevel = entry.getLevel();
+            if (!shouldLog(entryLevel, nameSpace)) {
                 return;
             }
 
             synchronized (this) {
+                dispatch(nameSpace);
                 try {
-                    printPrefixString(entry.getLevel(), entry.getNameSpace());
+                    printPrefixString(entryLevel, nameSpace);
                     this.getWriter().write(getSupplementDetailString(entry));
 
                     if (entry.hasMessage()) {
                         writeMessage(formatMessage(entry));
-                        getWriter().write(Helper.cr());
+//                        getWriter().write(Helper.cr());
                         getWriter().flush();
                     }
 
                     if (entry.hasException()) {
+                        getWriter().write(Helper.cr());
                         if (shouldLogExceptionStackTrace()) {
                             entry.getException().printStackTrace(new PrintWriter(getWriter()));
                         } else {
@@ -87,18 +94,14 @@ public class UILogger extends AbstractSessionLog {
         }
     }
 
-    public static void setPrintStream(PrintStream ps) {
-        if (printWriter != null) {
-            printWriter.flush();
-            printWriter.close();
-            printWriter = null;
-        }
-        if (stream != null) {
-            stream.flush();
-            stream.close();
+    private PrintWriter printWriter;
+    private String lastNameSpace;
 
+    private void dispatch(String nameSpace) {
+        if (printWriter != null && !Objects.equals(lastNameSpace, nameSpace)) {
+            printWriter.flush();
         }
-        stream = ps;
-        printWriter = new PrintWriter(stream);
+        lastNameSpace = nameSpace;
+        printWriter = dispatcher.route(nameSpace);
     }
 }

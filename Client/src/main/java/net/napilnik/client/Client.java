@@ -16,11 +16,14 @@
 package net.napilnik.client;
 
 import bitronix.tm.BitronixTransactionManager;
+import bitronix.tm.Configuration;
 import bitronix.tm.TransactionManagerServices;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -34,8 +37,21 @@ public class Client implements AutoCloseable {
     private final BitronixTransactionManager tm;
     private final EntityManagerFactory emf;
 
+    private BitronixTransactionManager connect() {
+        long now = new Date().getTime();
+        String clientId = "client-%d".formatted(now);
+        Configuration conf = TransactionManagerServices.getConfiguration();
+        conf.setServerId(clientId);
+        File logsFolder = new File("jta-logs", clientId);
+        conf.setLogPart1Filename(new File(logsFolder, "part1.btm").getAbsolutePath());
+        conf.setLogPart2Filename(new File(logsFolder, "part2.btm").getAbsolutePath());
+        conf.setJndiUserTransactionName("java:comp/UserTransaction");
+        conf.setResourceConfigurationFilename("resources.properties");
+        return TransactionManagerServices.getTransactionManager();
+    }
+
     public Client() {
-        tm = TransactionManagerServices.getTransactionManager();
+        tm = connect();
         emf = Persistence.createEntityManagerFactory("model");
     }
 

@@ -5,6 +5,8 @@
         <jta-data-source>hsqldb</jta-data-source>
         <class>net.napilnik.entitymodel.Application</class>
         <class>net.napilnik.entitymodel.Document</class>
+        
+        <shared-cache-mode>ALL</shared-cache-mode>
         <properties>
             <property name="jakarta.persistence.jtaDataSource" value="hsqldb" />
 

@@ -16,12 +16,9 @@
 package net.napilnik.client.tasks;
 
 import jakarta.persistence.EntityManagerFactory;
-import java.util.List;
 import net.napilnik.client.ClientTask;
 import net.napilnik.entitymodel.Application;
 import net.napilnik.entitymodel.ApplicationController;
-import net.napilnik.entitymodel.Document;
-import net.napilnik.entitymodel.DocumentController;
 
 /**
  *
@@ -31,14 +28,13 @@ public class ReadDocsTask implements ClientTask{
 
     @Override
     public void execute(EntityManagerFactory emf) {
-        try(ApplicationController ac = new ApplicationController(emf);
-                DocumentController dc = new DocumentController(emf)) {
+        try(ApplicationController ac = new ApplicationController(emf)) {
             Application app = ac.find("tenbyten-app");
             if(app==null) {
                 return;
             }
             
-            List<Document> docs = dc.getByMnemo(app, "tenbyten");
+            System.out.println("Found %d documents.".formatted(app.getDocuments().size()));
         }
     }
 

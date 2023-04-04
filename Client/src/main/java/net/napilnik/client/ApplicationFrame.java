@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JToggleButton;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 /**
@@ -50,7 +51,8 @@ public class ApplicationFrame extends javax.swing.JFrame {
         DocumentPrintStream outPrintStream = new DocumentPrintStream(logScrollPane.getVerticalScrollBar(), document, System.out);
         System.setOut(outPrintStream);
 
-        UILogger.setPrintStream(outPrintStream);
+        LoggerDispatcher logDispatcher = new LoggerDispatcher(logsTabbedPane, outPrintStream);
+        UILogger.setDispatcher(logDispatcher);
 
         DocumentPrintStream errPrintStream = new DocumentPrintStream(logScrollPane.getVerticalScrollBar(), document, System.err);
         System.setErr(errPrintStream);
@@ -144,9 +146,12 @@ public class ApplicationFrame extends javax.swing.JFrame {
 
         jSplitPane1 = new javax.swing.JSplitPane();
         jPanel2 = new javax.swing.JPanel();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
+        logsTabbedPane = new javax.swing.JTabbedPane();
+        defaultLogPanel = new javax.swing.JPanel();
         logScrollPane = new javax.swing.JScrollPane();
         logTextPane = new javax.swing.JTextPane();
+        logToolBar = new javax.swing.JToolBar();
+        resetLogButton = new javax.swing.JButton();
         jToolBar2 = new javax.swing.JToolBar();
         executionLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
@@ -173,12 +178,33 @@ public class ApplicationFrame extends javax.swing.JFrame {
 
         jPanel2.setLayout(new java.awt.BorderLayout());
 
+        defaultLogPanel.setLayout(new java.awt.BorderLayout());
+
         logTextPane.setEditable(false);
         logScrollPane.setViewportView(logTextPane);
 
-        jTabbedPane1.addTab("Logger", logScrollPane);
+        defaultLogPanel.add(logScrollPane, java.awt.BorderLayout.CENTER);
 
-        jPanel2.add(jTabbedPane1, java.awt.BorderLayout.CENTER);
+        logToolBar.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        logToolBar.setRollover(true);
+
+        resetLogButton.setText("<html>&#8855;");
+        resetLogButton.setToolTipText("Clear log");
+        resetLogButton.setFocusable(false);
+        resetLogButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        resetLogButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        resetLogButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetLogButtonActionPerformed(evt);
+            }
+        });
+        logToolBar.add(resetLogButton);
+
+        defaultLogPanel.add(logToolBar, java.awt.BorderLayout.WEST);
+
+        logsTabbedPane.addTab("Logs", defaultLogPanel);
+
+        jPanel2.add(logsTabbedPane, java.awt.BorderLayout.CENTER);
 
         jToolBar2.setRollover(true);
 
@@ -281,6 +307,15 @@ public class ApplicationFrame extends javax.swing.JFrame {
         setBusy(false);
     }//GEN-LAST:event_connectToggleButtonActionPerformed
 
+    private void resetLogButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetLogButtonActionPerformed
+        Document document = logTextPane.getDocument();
+        try {
+            document.remove(0, document.getLength());
+        } catch (BadLocationException ex) {
+            Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_resetLogButtonActionPerformed
+
     void beforeExit() {
 
         props.setDividerPosition(jSplitPane1.getDividerLocation());
@@ -299,6 +334,7 @@ public class ApplicationFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton connectToggleButton;
+    private javax.swing.JPanel defaultLogPanel;
     private javax.swing.JLabel executionLabel;
     private javax.swing.JButton exitButton;
     private javax.swing.JPanel jPanel1;
@@ -306,10 +342,12 @@ public class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JToolBar.Separator jSeparator2;
     private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JToolBar jToolBar2;
     private javax.swing.JScrollPane logScrollPane;
     private javax.swing.JTextPane logTextPane;
+    private javax.swing.JToolBar logToolBar;
+    private javax.swing.JTabbedPane logsTabbedPane;
+    private javax.swing.JButton resetLogButton;
     private javax.swing.JToolBar tasksToolBar;
     // End of variables declaration//GEN-END:variables
 
