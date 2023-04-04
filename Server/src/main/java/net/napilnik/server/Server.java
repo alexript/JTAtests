@@ -68,11 +68,11 @@ public class Server {
             });
         }).start();
         new BitronixTransactionManager().shutdown();
-        BrokerService broker = new BrokerService();
-        broker.addConnector("tcp://localhost:61616");
 
         new Thread(() -> {
             try {
+                BrokerService broker = new BrokerService();
+                broker.addConnector("tcp://localhost:61616");
                 broker.start();
             } catch (Exception ex) {
                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);

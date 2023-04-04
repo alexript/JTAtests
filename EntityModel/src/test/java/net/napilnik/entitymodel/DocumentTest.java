@@ -16,8 +16,10 @@
 package net.napilnik.entitymodel;
 
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
@@ -38,6 +40,7 @@ public class DocumentTest {
 
     private static final String MNEMO_1 = "doc1";
     private static final String MNEMO_2 = "doc2";
+    private static final String MNEMO_3 = "doc3";
 
     /**
      * Same emf for test scope.
@@ -60,14 +63,26 @@ public class DocumentTest {
     public void tearDown() {
     }
 
-    /**
-     * Nice test results delimiter.
-     *
-     * @param name
-     */
-    private static void printTestHeader(String name) {
-        System.out.println("---- " + name + " -----------------");
+//<editor-fold defaultstate="collapsed" desc="Nice test results delimiters.">
+    private static Date printTestHeader(String name) {
+        Date now = new Date();
+        System.out.println("-ts- Test: %1$s -------------- <start: %2$tH:%2$tM:%2$tS> ---".formatted(name, now));
+        return now;
     }
+
+    private static void printTestFooter(String name) {
+        printTestFooter(name, null);
+    }
+
+    private static void printTestFooter(String name, Date startNow) {
+        if (startNow == null) {
+            System.out.println("-te- Test: %s -------------- <end: %2$tH:%2$tM:%2$tS> ---\n".formatted(name, new Date()));
+        } else {
+            Date now = new Date();
+            System.out.println("-te- Test: %1$s -------------- <end: %2$tH:%2$tM:%2$tS, len: %3$dms> ---\n".formatted(name, now, now.getTime() - startNow.getTime()));
+        }
+    }
+//</editor-fold>
 
     /**
      * AlphaNumeric codes expected. Allows '-' and '_' symbols.
@@ -91,6 +106,7 @@ public class DocumentTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> new Document(MNEMO_1, ""));
+        printTestFooter("testCodeFormat");
     }
 
     /**
@@ -98,7 +114,7 @@ public class DocumentTest {
      */
     @Test
     public void testCreate() {
-        printTestHeader("testCreate");
+        Date startNow = printTestHeader("testCreate");
         Document doc = new Document(MNEMO_1, "testCreate");
         try (DocumentController c = new DocumentController(emf)) {
             boolean result = c.create(doc);
@@ -106,6 +122,7 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
+        printTestFooter("testCreate", startNow);
     }
 
     /**
@@ -113,7 +130,7 @@ public class DocumentTest {
      */
     @Test
     public void testDelete() {
-        printTestHeader("testDelete");
+        Date startNow = printTestHeader("testDelete");
         Document doc = new Document(MNEMO_1, "testDelete");
         try (DocumentController c = new DocumentController(emf)) {
             c.create(doc);
@@ -122,6 +139,7 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
+        printTestFooter("testDelete", startNow);
     }
 
     /**
@@ -129,7 +147,7 @@ public class DocumentTest {
      */
     @Test
     public void testUpdate() {
-        printTestHeader("testUpdate");
+        Date startNow = printTestHeader("testUpdate");
         Document doc = new Document(MNEMO_1, "testUpdate");
         try (DocumentController c = new DocumentController(emf)) {
             c.create(doc);
@@ -139,6 +157,7 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
+        printTestFooter("testUpdate", startNow);
     }
 
     /**
@@ -146,7 +165,7 @@ public class DocumentTest {
      */
     @Test
     public void testFind() {
-        printTestHeader("testFind");
+        Date startNow = printTestHeader("testFind");
         Document doc = new Document(MNEMO_1, "testFind");
         try (DocumentController c = new DocumentController(emf)) {
             c.create(doc);
@@ -157,6 +176,7 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
+        printTestFooter("testFind", startNow);
     }
 
     /**
@@ -164,7 +184,7 @@ public class DocumentTest {
      */
     @Test
     public void testCreateChilds() {
-        printTestHeader("testCreateChilds");
+        Date startNow = printTestHeader("testCreateChilds");
         Document parentDoc = new Document(MNEMO_1, "parent");
         Document childDoc = new Document(MNEMO_1, "child");
 
@@ -177,6 +197,7 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
+        printTestFooter("testCreateChilds", startNow);
     }
 
     /**
@@ -185,7 +206,7 @@ public class DocumentTest {
      */
     @Test
     public void testFindChilds() {
-        printTestHeader("testFindChilds");
+        Date startNow = printTestHeader("testFindChilds");
         Document parentDoc = new Document(MNEMO_1, "parent");
         Document childDoc = new Document(MNEMO_1, "child");
 
@@ -201,6 +222,7 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
+        printTestFooter("testFindChilds", startNow);
     }
 
     /**
@@ -208,7 +230,7 @@ public class DocumentTest {
      */
     @Test
     public void testFindChildsInNewEM() {
-        printTestHeader("testFindChildsInNewEM");
+        Date startNow = printTestHeader("testFindChildsInNewEM");
         Document parentDoc = new Document(MNEMO_1, "parent");
         Document childDoc = new Document(MNEMO_1, "child");
         Collection<Document> expected = null;
@@ -238,7 +260,7 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
-
+        printTestFooter("testFindChildsInNewEM", startNow);
     }
 
     /**
@@ -246,7 +268,7 @@ public class DocumentTest {
      */
     @Test
     public void testFindChildsWithMnemo() {
-        printTestHeader("testFindChildsWithMnemo");
+        Date startNow = printTestHeader("testFindChildsWithMnemo");
         Document parentDoc = new Document(MNEMO_1, "parent");
         Document[] children = new Document[]{
             new Document(MNEMO_1, "child1"),
@@ -271,6 +293,53 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
+        printTestFooter("testFindChildsWithMnemo", startNow);
+    }
+
+    /**
+     * Check select query by mnemo.
+     */
+    @Test
+    public void testGetByMnemo() {
+        Date startNow = printTestHeader("testGetByMnemo");
+        int documentsNumber = 10;
+        try (DocumentController c = new DocumentController(emf)) {
+            for (int counter = 0; counter < documentsNumber; counter++) {
+                c.create(new Document(MNEMO_1, "doc-1-" + counter));
+                c.create(new Document(MNEMO_2, "doc-2-" + counter));
+                c.create(new Document(MNEMO_3, "doc-3-" + counter));
+            }
+            List<Document> result = c.getByMnemo(MNEMO_3);
+            assertEquals(documentsNumber, result.size());
+        } catch (Exception ex) {
+            fail(ex);
+        }
+        printTestFooter("testFindChildsWithMnemo", startNow);
+    }
+
+    /**
+     * Check a fiew persist requests in one transaction.
+     */
+    @Test
+    public void testBasicTransaction() {
+        Date startNow = printTestHeader("testBasicTransaction");
+        int documentsNumber = 10;
+        try (DocumentController c = new DocumentController(emf)) {
+            EntityTransaction tr = c.createTransaction();
+            try {
+                for (int counter = 0; counter < documentsNumber; counter++) {
+                    c.create(tr, new Document(MNEMO_1, "doc-transacted-" + counter));
+                }
+                tr.commit();
+            } catch (Exception ex) {
+                tr.rollback();
+                fail(ex);
+            }
+        } catch (Exception ex) {
+            fail(ex);
+        }
+        assertTrue(true); // there is no formal success state.
+        printTestFooter("testBasicTransaction", startNow);
     }
 
 }

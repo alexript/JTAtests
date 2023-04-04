@@ -44,13 +44,15 @@ import java.util.regex.Pattern;
 @Table(
         name = "documents",
         indexes = {
-            @Index(columnList = "mnemo")
+            @Index(columnList = "mnemo"),
+            @Index(columnList = "code")
         }
 )
 @NamedQuery(name = "GetChildren", query = "SELECT d FROM Document d WHERE d.parentDocuments = :doc")
 @NamedQuery(name = "GetParents", query = "SELECT d FROM Document d WHERE d.childDocuments = :doc")
 @NamedQuery(name = "GetChildrenWithMnemo", query = "SELECT d FROM Document d WHERE d.parentDocuments = :doc AND d.mnemo = :mnemo")
 @NamedQuery(name = "GetParentsWithMnemo", query = "SELECT d FROM Document d WHERE d.childDocuments = :doc AND d.mnemo = :mnemo")
+@NamedQuery(name = "GetByMnemo", query = "SELECT d FROM Document d WHERE d.mnemo = :mnemo ORDER BY d.code")
 public class Document implements Serializable {
 
     private static final long serialVersionUID = -4704534697859793297L;

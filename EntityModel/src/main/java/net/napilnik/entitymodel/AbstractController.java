@@ -92,6 +92,17 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
     }
 
     /**
+     * Create and begin Transaction.
+     *
+     * @return started transaction
+     */
+    public final EntityTransaction createTransaction() {
+        EntityTransaction tr = em.getTransaction();
+        tr.begin();
+        return tr;
+    }
+
+    /**
      * Persist @Entity object.
      *
      * @param entity @Entity object
@@ -109,6 +120,16 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
             return false;
         }
         return true;
+    }
+
+    /**
+     * Add @Entity persist request into transaction.
+     *
+     * @param tr started transaction
+     * @param entity @Entity object
+     */
+    public final void create(EntityTransaction tr, ENTITY entity) {
+        em.persist(entity);
     }
 
     /**

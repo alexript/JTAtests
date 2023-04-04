@@ -15,6 +15,8 @@
  */
 package net.napilnik.client;
 
+import bitronix.tm.BitronixTransactionManager;
+import bitronix.tm.TransactionManagerServices;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import java.util.Date;
@@ -32,9 +34,13 @@ public class Client {
 
     public static void main(String[] args) {
 
+        BitronixTransactionManager tm = TransactionManagerServices.getTransactionManager();
+
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("model");
         try (DocumentController c = new DocumentController(emf)) {
-            while (true) {
+            int iterations = 50;
+            int counter = 0;
+            while (counter < iterations) {
 
                 Document d = new Document("doc.random", Long.toString(new Date().getTime()));
                 c.create(d);
@@ -49,10 +55,11 @@ public class Client {
                     List<Document> parents = c.getParents(someDoc);
 
                 }
-
+                counter++;
             }
         } catch (Exception ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
+        tm.shutdown();
     }
 }

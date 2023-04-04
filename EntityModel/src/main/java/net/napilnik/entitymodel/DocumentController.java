@@ -88,6 +88,18 @@ public class DocumentController extends AbstractController<Document, Long> {
         return query("GetParentsWithMnemo", params);
     }
 
+    /**
+     * Get all Document filtered by mnemo.
+     *
+     * @param mnemo Document mnemonic
+     * @return List of Document
+     */
+    public List<Document> getByMnemo(String mnemo) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("mnemo", mnemo);
+        return query("GetByMnemo", params);
+    }
+
 //<editor-fold defaultstate="collapsed" desc="interface implementation">
     @Override
     public Document find(Long pk) {
