@@ -19,9 +19,12 @@ import bitronix.tm.BitronixTransactionManager;
 import bitronix.tm.TransactionManagerServices;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import net.napilnik.entitymodel.Document;
 import net.napilnik.entitymodel.DocumentController;
@@ -30,13 +33,31 @@ import net.napilnik.entitymodel.DocumentController;
  *
  * @author alexript
  */
-public class Client {
+public class Client implements AutoCloseable {
 
-    public static void main(String[] args) {
+    private final BitronixTransactionManager tm;
+    private final EntityManagerFactory emf;
 
-        BitronixTransactionManager tm = TransactionManagerServices.getTransactionManager();
+    public Client() {
+        tm = TransactionManagerServices.getTransactionManager();
+        emf = Persistence.createEntityManagerFactory("model");
+    }
 
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("model");
+    public final BitronixTransactionManager getTM() {
+        return tm;
+    }
+
+    public final EntityManagerFactory getEMF() {
+        return emf;
+    }
+
+    @Override
+    public void close() throws Exception {
+        emf.close();
+        tm.shutdown();
+    }
+
+    public final void mainLoop() {
         try (DocumentController c = new DocumentController(emf)) {
             int iterations = 50;
             int counter = 0;
@@ -60,6 +81,35 @@ public class Client {
         } catch (Exception ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
-        tm.shutdown();
     }
+
+    public static void main(String[] args) {
+        System.setProperty("sun.java2d.dpiaware", "true");
+
+         try (InputStream fis = Client.class.getResourceAsStream("logging.properties")) {
+            LogManager.getLogManager().readConfiguration(fis);
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* Set the Nimbus look and feel */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        java.awt.EventQueue.invokeLater(() -> {
+            new ApplicationFrame().setVisible(true);
+        });
+
+    }
+
 }

@@ -18,6 +18,7 @@
             <property name="eclipselink.jdbc.cache-size" value="5000"/>
             <property name="eclipselink.jdbc.bind-parameters" value="true"/>
 
+            <property name="eclipselink.logging.logger" value="net.napilnik.client.UILogger"/>
             <property name="eclipselink.logging.level.sql" value="FINEST"/>
             <property name="eclipselink.logging.parameters" value="true"/>
 
