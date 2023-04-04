@@ -18,6 +18,8 @@ package net.napilnik.entitymodel;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.Parameter;
 import jakarta.persistence.Persistence;
 import jakarta.persistence.TypedQuery;
@@ -39,7 +41,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
     /**
      * Working EntityManager instance.
      */
-    private final EntityManager em;
+    protected final EntityManager em;
 
     /**
      * Working EntityManagerFactory instance.
@@ -241,6 +243,35 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
     }
 
     /**
+     * Find single @Entity object by NamedQuery.
+     *
+     * @param queryName NamedQuery name
+     * @param entityClass @Entity class
+     * @param parameters query parameters values map. Key -- parameter name,
+     * value -- value
+     * @return @Entity object or null if not found
+     */
+    protected final ENTITY querySingle(String queryName, Class<ENTITY> entityClass, Map<String, Object> parameters) {
+        TypedQuery<ENTITY> nq = em.createNamedQuery(queryName, entityClass);
+
+        Set<Parameter<?>> qParams = nq.getParameters();
+
+        if (parameters != null && parameters.size() == qParams.size()) {
+            parameters.forEach((key, value) -> {
+                nq.setParameter(key, value);
+            });
+        }
+        try {
+            return nq.getSingleResult();
+        } catch (NoResultException ex) {
+            return null;
+        } catch (NonUniqueResultException ex) {
+            sqlError(ex);
+            return nq.getResultList().get(0);
+        }
+    }
+
+    /**
      * Find List of @Entity objects by NamedQuery. Simplified signature for
      * List&lt;ENTITY&gt; query(String queryName, Class&lt;ENTITY&gt;
      * entityClass, Map&lt;String, Object&gt; parameters). Must be Overrided in
@@ -251,7 +282,40 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      * value -- value
      * @return List of @Entity objects
      */
-    public abstract List<ENTITY> query(String queryName, Map<String, Object> parameters);
+    protected abstract List<ENTITY> query(String queryName, Map<String, Object> parameters);
+
+    /**
+     * Find single @Entity object by NamedQuery. Simplified signature for ENTITY
+     * querySingle(String queryName, Class&lt;ENTITY&gt; entityClass,
+     * Map&lt;String, Object&gt; parameters). Must be Overrided in extended
+     * classes.
+     *
+     * @param queryName NamedQuery name
+     * @param parameters query parameters values map. Key -- parameter name,
+     * value -- value
+     * @return @Entity object or null if not found
+     */
+    protected abstract ENTITY querySingle(String queryName, Map<String, Object> parameters);
+
+    /**
+     * Find List of @Entity objects by NamedQuery without parameters.
+     *
+     * @param queryName NamedQuery name
+     * @return List of @Entity objects
+     */
+    protected final List<ENTITY> query(String queryName) {
+        return query(queryName, null);
+    }
+
+    /**
+     * Find @Entity object by NamedQuery without parameters.
+     *
+     * @param queryName NamedQuery name
+     * @return @Entity object or null
+     */
+    protected final ENTITY querySingle(String queryName) {
+        return querySingle(queryName, null);
+    }
 
     /**
      * Universal SQL Errors logger for all controllers.

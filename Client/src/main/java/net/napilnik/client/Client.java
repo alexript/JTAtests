@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import net.napilnik.entitymodel.Application;
+import net.napilnik.entitymodel.ApplicationController;
 import net.napilnik.entitymodel.Document;
 import net.napilnik.entitymodel.DocumentController;
 
@@ -58,12 +60,18 @@ public class Client implements AutoCloseable {
     }
 
     public final void mainLoop() {
-        try (DocumentController c = new DocumentController(emf)) {
+        try (ApplicationController ac = new ApplicationController(emf);
+                DocumentController c = new DocumentController(emf)
+                ) {
             int iterations = 50;
             int counter = 0;
+            
+            Application app = new Application("infinite-app");
+            ac.create(app);
+            
             while (counter < iterations) {
 
-                Document d = new Document("doc.random", Long.toString(new Date().getTime()));
+                Document d = new Document(app, "doc.random", Long.toString(new Date().getTime()));
                 c.create(d);
                 Long id = d.getId();
                 Thread.sleep(200);

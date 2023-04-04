@@ -39,17 +39,22 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DocumentTest {
 
     private static EntityManagerFactory emf;
+    private static Application app;
 
     private static final String MNEMO_1 = "doc1";
     private static final String MNEMO_2 = "doc2";
     private static final String MNEMO_3 = "doc3";
 
     /**
-     * Same emf for test scope.
+     * Same emf for test scope. Create Application instance for all this tests.
      */
     @BeforeAll
     public static void setUpClass() {
         emf = Persistence.createEntityManagerFactory("model-unit-tests");
+        app = new Application("appForDocsTests");
+        try (ApplicationController c = new ApplicationController(emf)) {
+            c.create(app);
+        }
     }
 
     @AfterAll
@@ -71,22 +76,22 @@ public class DocumentTest {
     @Test
     public void testCodeFormat() {
         printTestHeader("testCodeFormat");
-        assertDoesNotThrow(() -> new Document(MNEMO_1, "1"));
-        assertDoesNotThrow(() -> new Document(MNEMO_1, "12"));
-        assertDoesNotThrow(() -> new Document(MNEMO_1, "12-3"));
-        assertDoesNotThrow(() -> new Document(MNEMO_1, "12-3_4"));
-        assertDoesNotThrow(() -> new Document(MNEMO_1, "12-3_4a"));
-        assertDoesNotThrow(() -> new Document(MNEMO_1, "12-3_4aA"));
+        assertDoesNotThrow(() -> new Document(app, MNEMO_1, "1"));
+        assertDoesNotThrow(() -> new Document(app, MNEMO_1, "12"));
+        assertDoesNotThrow(() -> new Document(app, MNEMO_1, "12-3"));
+        assertDoesNotThrow(() -> new Document(app, MNEMO_1, "12-3_4"));
+        assertDoesNotThrow(() -> new Document(app, MNEMO_1, "12-3_4a"));
+        assertDoesNotThrow(() -> new Document(app, MNEMO_1, "12-3_4aA"));
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new Document(MNEMO_1, "12-3 _4aA"));
+                () -> new Document(app, MNEMO_1, "12-3 _4aA"));
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new Document(MNEMO_1, "12-3#4aA"));
+                () -> new Document(app, MNEMO_1, "12-3#4aA"));
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new Document(MNEMO_1, ""));
+                () -> new Document(app, MNEMO_1, ""));
         printTestFooter("testCodeFormat");
     }
 
@@ -96,7 +101,7 @@ public class DocumentTest {
     @Test
     public void testCreate() {
         Date startNow = printTestHeader("testCreate");
-        Document doc = new Document(MNEMO_1, "testCreate");
+        Document doc = new Document(app, MNEMO_1, "testCreate");
         try (DocumentController c = new DocumentController(emf)) {
             boolean result = c.create(doc);
             assertTrue(result);
@@ -112,7 +117,7 @@ public class DocumentTest {
     @Test
     public void testDelete() {
         Date startNow = printTestHeader("testDelete");
-        Document doc = new Document(MNEMO_1, "testDelete");
+        Document doc = new Document(app, MNEMO_1, "testDelete");
         try (DocumentController c = new DocumentController(emf)) {
             c.create(doc);
             boolean result = c.delete(doc);
@@ -129,7 +134,7 @@ public class DocumentTest {
     @Test
     public void testUpdate() {
         Date startNow = printTestHeader("testUpdate");
-        Document doc = new Document(MNEMO_1, "testUpdate");
+        Document doc = new Document(app, MNEMO_1, "testUpdate");
         try (DocumentController c = new DocumentController(emf)) {
             c.create(doc);
             doc.setCode("testUpdate2");
@@ -147,7 +152,7 @@ public class DocumentTest {
     @Test
     public void testFind() {
         Date startNow = printTestHeader("testFind");
-        Document doc = new Document(MNEMO_1, "testFind");
+        Document doc = new Document(app, MNEMO_1, "testFind");
         try (DocumentController c = new DocumentController(emf)) {
             c.create(doc);
             Long id = doc.getId();
@@ -166,8 +171,8 @@ public class DocumentTest {
     @Test
     public void testCreateChilds() {
         Date startNow = printTestHeader("testCreateChilds");
-        Document parentDoc = new Document(MNEMO_1, "parent");
-        Document childDoc = new Document(MNEMO_1, "child");
+        Document parentDoc = new Document(app, MNEMO_1, "parent");
+        Document childDoc = new Document(app, MNEMO_1, "child");
 
         try (DocumentController c = new DocumentController(emf)) {
             c.create(parentDoc);
@@ -188,8 +193,8 @@ public class DocumentTest {
     @Test
     public void testFindChilds() {
         Date startNow = printTestHeader("testFindChilds");
-        Document parentDoc = new Document(MNEMO_1, "parent");
-        Document childDoc = new Document(MNEMO_1, "child");
+        Document parentDoc = new Document(app, MNEMO_1, "parent");
+        Document childDoc = new Document(app, MNEMO_1, "child");
 
         try (DocumentController c = new DocumentController(emf)) {
             c.create(parentDoc);
@@ -212,8 +217,8 @@ public class DocumentTest {
     @Test
     public void testFindChildsInNewEM() {
         Date startNow = printTestHeader("testFindChildsInNewEM");
-        Document parentDoc = new Document(MNEMO_1, "parent");
-        Document childDoc = new Document(MNEMO_1, "child");
+        Document parentDoc = new Document(app, MNEMO_1, "parent");
+        Document childDoc = new Document(app, MNEMO_1, "child");
         Collection<Document> expected = null;
         Long parentId = null;
         Long childId = null;
@@ -251,12 +256,12 @@ public class DocumentTest {
     public void testFindChildsWithMnemo() {
         final String uniqueMnemo = "iseuhfsieufh";
         Date startNow = printTestHeader("testFindChildsWithMnemo");
-        Document parentDoc = new Document(MNEMO_1, "parent");
+        Document parentDoc = new Document(app, MNEMO_1, "parent");
         Document[] children = new Document[]{
-            new Document(MNEMO_1, "child1"),
-            new Document(MNEMO_1, "child2"),
-            new Document(MNEMO_1, "child3"),
-            new Document(uniqueMnemo, "child4"), // <- this one
+            new Document(app, MNEMO_1, "child1"),
+            new Document(app, MNEMO_1, "child2"),
+            new Document(app, MNEMO_1, "child3"),
+            new Document(app, uniqueMnemo, "child4"), // <- this one
         };
 
         try (DocumentController c = new DocumentController(emf)) {
@@ -287,16 +292,62 @@ public class DocumentTest {
         int documentsNumber = 10;
         try (DocumentController c = new DocumentController(emf)) {
             for (int counter = 0; counter < documentsNumber; counter++) {
-                c.create(new Document(MNEMO_1, "doc-1-" + counter));
-                c.create(new Document(MNEMO_2, "doc-2-" + counter));
-                c.create(new Document(MNEMO_3, "doc-3-" + counter));
+                c.create(new Document(app, MNEMO_1 + "-mod", "doc-1-" + counter));
+                c.create(new Document(app, MNEMO_2 + "-mod", "doc-2-" + counter));
+                c.create(new Document(app, MNEMO_3 + "-mod", "doc-3-" + counter));
             }
-            List<Document> result = c.getByMnemo(MNEMO_3);
+            List<Document> result = c.getByMnemo(app, MNEMO_3 + "-mod");
             assertEquals(documentsNumber, result.size());
         } catch (Exception ex) {
             fail(ex);
         }
-        printTestFooter("testFindChildsWithMnemo", startNow);
+        printTestFooter("testGetByMnemo", startNow);
+    }
+
+    
+    /**
+     * Check select query by code.
+     */
+    @Test
+    public void testGetByCode() {
+        Date startNow = printTestHeader("testGetByCode");
+        int documentsNumber = 10;
+        try (DocumentController c = new DocumentController(emf)) {
+            for (int counter = 0; counter < documentsNumber; counter++) {
+                c.create(new Document(app, MNEMO_1, "doc-C1-" + counter));
+                c.create(new Document(app, MNEMO_2, "doc-C2-" + counter));
+                c.create(new Document(app, MNEMO_3, "doc-C3-" + counter));
+            }
+            List<Document> result = c.getByCode(app, "doc-C3-0");
+            assertEquals(1, result.size());
+        } catch (Exception ex) {
+            fail(ex);
+        }
+        printTestFooter("testGetByCode", startNow);
+    }
+    
+    /**
+     * Check select query by mnemo AND code.
+     */
+    @Test
+    public void testGetByMnemoCode() {
+        Date startNow = printTestHeader("testGetByMnemoCode");
+        int documentsNumber = 10;
+        try (DocumentController c = new DocumentController(emf)) {
+            for (int counter = 0; counter < documentsNumber; counter++) {
+                c.create(new Document(app, MNEMO_1, "doc-MC1-" + counter));
+                c.create(new Document(app, MNEMO_2, "doc-MC2-" + counter));
+                c.create(new Document(app, MNEMO_3, "doc-MC3-" + counter));
+            }
+            List<Document> result = c.getByCode(app, MNEMO_3, "doc-MC3-0");
+            assertEquals(1, result.size());
+            
+            result = c.getByCode(app, MNEMO_2, "doc-MC3-0");
+            assertEquals(0, result.size());
+        } catch (Exception ex) {
+            fail(ex);
+        }
+        printTestFooter("testGetByMnemoCode", startNow);
     }
 
     /**
@@ -310,7 +361,7 @@ public class DocumentTest {
             EntityTransaction tr = c.createTransaction();
             try {
                 for (int counter = 0; counter < documentsNumber; counter++) {
-                    c.create(tr, new Document(MNEMO_1, "doc-transacted-" + counter));
+                    c.create(tr, new Document(app, MNEMO_1, "doc-transacted-" + counter));
                 }
                 tr.commit();
             } catch (Exception ex) {
@@ -330,7 +381,7 @@ public class DocumentTest {
         try (DocumentController c = new DocumentController(emf)) {
             EntityTransaction tr = c.createTransaction();
             try {
-                Document doc = new Document(MNEMO_1, "doc-transacted-crud");
+                Document doc = new Document(app, MNEMO_1, "doc-transacted-crud");
                 c.create(tr, doc);
                 final Long id = doc.getId();
                 Document foundDoc = c.find(id);

@@ -91,13 +91,45 @@ public class DocumentController extends AbstractController<Document, Long> {
     /**
      * Get all Document filtered by mnemo.
      *
+     * @param app for documents
      * @param mnemo Document mnemonic
      * @return List of Document
      */
-    public List<Document> getByMnemo(String mnemo) {
+    public List<Document> getByMnemo(Application app, String mnemo) {
         Map<String, Object> params = new HashMap<>();
+        params.put("app", app);
         params.put("mnemo", mnemo);
         return query("GetByMnemo", params);
+    }
+
+    /**
+     * Get all Document filtered by code.
+     *
+     * @param app for documents
+     * @param code Document code
+     * @return List of Document
+     */
+    public List<Document> getByCode(Application app, String code) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("app", app);
+        params.put("code", code);
+        return query("GetByCode", params);
+    }
+
+    /**
+     * Get all Document filtered by mnamo AND code.
+     *
+     * @param app for documents
+     * @param mnemo Document mnemo
+     * @param code Document code
+     * @return List of Document
+     */
+    public List<Document> getByCode(Application app, String mnemo, String code) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("app", app);
+        params.put("mnemo", mnemo);
+        params.put("code", code);
+        return query("GetByMnemoCode", params);
     }
 
 //<editor-fold defaultstate="collapsed" desc="interface implementation">
@@ -107,8 +139,13 @@ public class DocumentController extends AbstractController<Document, Long> {
     }
 
     @Override
-    public List<Document> query(String queryName, Map<String, Object> parameters) {
+    protected List<Document> query(String queryName, Map<String, Object> parameters) {
         return query(queryName, Document.class, parameters);
+    }
+
+    @Override
+    protected Document querySingle(String queryName, Map<String, Object> parameters) {
+        return querySingle(queryName, Document.class, parameters);
     }
 //</editor-fold>
 

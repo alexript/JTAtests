@@ -3,6 +3,7 @@
     <persistence-unit name="model" transaction-type="JTA">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <jta-data-source>hsqldb</jta-data-source>
+        <class>net.napilnik.entitymodel.Application</class>
         <class>net.napilnik.entitymodel.Document</class>
         <properties>
             <property name="jakarta.persistence.jtaDataSource" value="hsqldb" />

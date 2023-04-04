@@ -27,7 +27,9 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import java.util.Collection;
 import java.util.HashSet;
@@ -44,14 +46,23 @@ import java.util.HashSet;
         name = "documents",
         indexes = {
             @Index(columnList = "mnemo"),
-            @Index(columnList = "code")
+            @Index(columnList = "code"),
+            @Index(columnList = "mnemo, application"),
+            @Index(columnList = "code, application"),
+            @Index(columnList = "mnemo, code, application"),
+            @Index(columnList = "parentDocuments"),
+            @Index(columnList = "childDocuments"),
+            @Index(columnList = "parentDocuments, mnemo"),
+            @Index(columnList = "childDocuments, mnemo")
         }
 )
 @NamedQuery(name = "GetChildren", query = "SELECT d FROM Document d WHERE d.parentDocuments = :doc")
 @NamedQuery(name = "GetParents", query = "SELECT d FROM Document d WHERE d.childDocuments = :doc")
 @NamedQuery(name = "GetChildrenWithMnemo", query = "SELECT d FROM Document d WHERE d.parentDocuments = :doc AND d.mnemo = :mnemo")
 @NamedQuery(name = "GetParentsWithMnemo", query = "SELECT d FROM Document d WHERE d.childDocuments = :doc AND d.mnemo = :mnemo")
-@NamedQuery(name = "GetByMnemo", query = "SELECT d FROM Document d WHERE d.mnemo = :mnemo ORDER BY d.code")
+@NamedQuery(name = "GetByMnemo", query = "SELECT d FROM Document d WHERE d.application = :app AND d.mnemo = :mnemo ORDER BY d.code")
+@NamedQuery(name = "GetByCode", query = "SELECT d FROM Document d WHERE d.application = :app AND d.code = :code")
+@NamedQuery(name = "GetByMnemoCode", query = "SELECT d FROM Document d WHERE d.application = :app AND d.mnemo = :mnemo AND d.code = :code")
 public class Document implements Serializable {
 
     private static final long serialVersionUID = -4704534697859793297L;
@@ -63,6 +74,10 @@ public class Document implements Serializable {
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "application", referencedColumnName = "mnemo", nullable = false, insertable = true, updatable = true)
+    private Application application;
 
     /**
      * Document type mnemonic.
@@ -103,7 +118,8 @@ public class Document implements Serializable {
 
     }
 
-    public Document(String mnemo, String code) {
+    public Document(Application app, String mnemo, String code) {
+        setApplication(app);
         setMnemo(mnemo);
         setCode(code);
     }
@@ -185,8 +201,19 @@ public class Document implements Serializable {
     public final void setMnemo(String mnemo) {
         this.mnemo = mnemo;
     }
-//</editor-fold>
 
+    public Application getApplication() {
+        return application;
+    }
+
+    public final void setApplication(Application application) {
+        this.application = application;
+        if (!application.getDocuments().contains(this)) {
+            application.addDocument(this);
+        }
+    }
+
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="hashCode, equals, toString">
     @Override
     public int hashCode() {
