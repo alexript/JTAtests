@@ -112,7 +112,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
         EntityTransaction tr = em.getTransaction();
         try {
             tr.begin();
-            em.persist(entity);
+            create(tr, entity);
             tr.commit();
         } catch (Exception ex) {
             tr.rollback();
@@ -142,7 +142,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
         EntityTransaction tr = em.getTransaction();
         try {
             tr.begin();
-            em.remove(entity);
+            delete(tr, entity);
             tr.commit();
         } catch (Exception ex) {
             tr.rollback();
@@ -150,6 +150,16 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
             return false;
         }
         return true;
+    }
+
+    /**
+     * Add remove persisted @Entity object request into transaction
+     *
+     * @param tr started transaction
+     * @param entity @Entity object
+     */
+    public final void delete(EntityTransaction tr, ENTITY entity) {
+        em.remove(entity);
     }
 
     /**
@@ -162,7 +172,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
         EntityTransaction tr = em.getTransaction();
         try {
             tr.begin();
-            em.merge(entity);
+            update(tr, entity);
             tr.commit();
         } catch (Exception ex) {
             tr.rollback();
@@ -170,6 +180,16 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
             return false;
         }
         return true;
+    }
+
+    /**
+     * Add merge persisted @Entity object request into transaction
+     *
+     * @param tr started transaction
+     * @param entity @Entity object
+     */
+    public final void update(EntityTransaction tr, ENTITY entity) {
+        em.merge(entity);
     }
 
     /**

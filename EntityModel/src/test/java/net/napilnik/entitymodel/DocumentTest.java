@@ -21,6 +21,8 @@ import jakarta.persistence.Persistence;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import static net.napilnik.entitymodel.Headers.printTestFooter;
+import static net.napilnik.entitymodel.Headers.printTestHeader;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,27 +64,6 @@ public class DocumentTest {
     @AfterEach
     public void tearDown() {
     }
-
-//<editor-fold defaultstate="collapsed" desc="Nice test results delimiters.">
-    private static Date printTestHeader(String name) {
-        Date now = new Date();
-        System.out.println("-ts- Test: %1$s -------------- <start: %2$tH:%2$tM:%2$tS> ---".formatted(name, now));
-        return now;
-    }
-
-    private static void printTestFooter(String name) {
-        printTestFooter(name, null);
-    }
-
-    private static void printTestFooter(String name, Date startNow) {
-        if (startNow == null) {
-            System.out.println("-te- Test: %s -------------- <end: %2$tH:%2$tM:%2$tS> ---\n".formatted(name, new Date()));
-        } else {
-            Date now = new Date();
-            System.out.println("-te- Test: %1$s -------------- <end: %2$tH:%2$tM:%2$tS, len: %3$dms> ---\n".formatted(name, now, now.getTime() - startNow.getTime()));
-        }
-    }
-//</editor-fold>
 
     /**
      * AlphaNumeric codes expected. Allows '-' and '_' symbols.
@@ -268,13 +249,14 @@ public class DocumentTest {
      */
     @Test
     public void testFindChildsWithMnemo() {
+        final String uniqueMnemo = "iseuhfsieufh";
         Date startNow = printTestHeader("testFindChildsWithMnemo");
         Document parentDoc = new Document(MNEMO_1, "parent");
         Document[] children = new Document[]{
             new Document(MNEMO_1, "child1"),
             new Document(MNEMO_1, "child2"),
             new Document(MNEMO_1, "child3"),
-            new Document(MNEMO_2, "child4"), // <- this one
+            new Document(uniqueMnemo, "child4"), // <- this one
         };
 
         try (DocumentController c = new DocumentController(emf)) {
@@ -285,10 +267,10 @@ public class DocumentTest {
                 c.update(child);
             }
 
-            List<Document> result = c.getChildren(parentDoc, MNEMO_2);
+            List<Document> result = c.getChildren(parentDoc, uniqueMnemo);
             assertTrue(result.size() == 1);
             Document childDoc = result.get(0);
-            assertEquals(MNEMO_2, childDoc.getMnemo());
+            assertEquals(uniqueMnemo, childDoc.getMnemo());
             assertEquals("child4", childDoc.getCode());
         } catch (Exception ex) {
             fail(ex);
@@ -340,6 +322,35 @@ public class DocumentTest {
         }
         assertTrue(true); // there is no formal success state.
         printTestFooter("testBasicTransaction", startNow);
+    }
+
+    @Test
+    public void testCRUDTransaction() {
+        Date startNow = printTestHeader("testCRUDTransaction");
+        try (DocumentController c = new DocumentController(emf)) {
+            EntityTransaction tr = c.createTransaction();
+            try {
+                Document doc = new Document(MNEMO_1, "doc-transacted-crud");
+                c.create(tr, doc);
+                final Long id = doc.getId();
+                Document foundDoc = c.find(id);
+                assertNotNull(foundDoc);
+                assertEquals(id, foundDoc.getId());
+                foundDoc.setCode("doc-transacted-crud-updated");
+                c.update(tr, foundDoc);
+                c.delete(tr, doc);
+                Document notFoundDoc = c.find(id);
+                assertNull(notFoundDoc);
+                tr.commit();
+            } catch (Throwable ex) {
+                tr.rollback();
+                fail(ex);
+            }
+        } catch (Exception ex) {
+            fail(ex);
+        }
+        assertTrue(true); // there is no formal success state.
+        printTestFooter("testCRUDTransaction", startNow);
     }
 
 }

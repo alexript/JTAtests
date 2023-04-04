@@ -31,7 +31,6 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.regex.Pattern;
 
 /**
  * Some kind of Document. menmo -- mnemonics of document type. code -- unique
