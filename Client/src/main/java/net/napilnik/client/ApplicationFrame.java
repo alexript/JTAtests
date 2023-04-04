@@ -15,13 +15,14 @@
  */
 package net.napilnik.client;
 
+import jakarta.persistence.EntityManagerFactory;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import javax.swing.JToggleButton;
 import javax.swing.text.Document;
 
 /**
@@ -31,7 +32,7 @@ import javax.swing.text.Document;
 public class ApplicationFrame extends javax.swing.JFrame {
 
     private static final long serialVersionUID = -6450492152460215683L;
-    private final Client client;
+    private Client client;
     private final AppProperties props;
 
     /**
@@ -40,28 +41,18 @@ public class ApplicationFrame extends javax.swing.JFrame {
     public ApplicationFrame() {
         initComponents();
         props = new AppProperties();
-        prepare();
-        this.client = new Client();
-    }
 
-    public ApplicationFrame(Client client) {
-        initComponents();
-        props = new AppProperties();
-        prepare();
-        this.client = client;
     }
 
     private void prepare() {
-        logScrollPane.getVerticalScrollBar().addAdjustmentListener((AdjustmentEvent e) -> {
-            e.getAdjustable().setValue(e.getAdjustable().getMaximum());
-        });
+
         Document document = logTextPane.getDocument();
-        DocumentPrintStream outPrintStream = new DocumentPrintStream(document, System.out);
+        DocumentPrintStream outPrintStream = new DocumentPrintStream(logScrollPane.getVerticalScrollBar(), document, System.out);
         System.setOut(outPrintStream);
 
         UILogger.setPrintStream(outPrintStream);
 
-        DocumentPrintStream errPrintStream = new DocumentPrintStream(document, System.err);
+        DocumentPrintStream errPrintStream = new DocumentPrintStream(logScrollPane.getVerticalScrollBar(), document, System.err);
         System.setErr(errPrintStream);
 
         this.setSize(props.getSize());
@@ -76,16 +67,56 @@ public class ApplicationFrame extends javax.swing.JFrame {
         }
 
         jSplitPane1.setDividerLocation(props.getDividerPosition(getDefaultDividerPosition()));
-        flagExecution(false);
+        setBusy(false);
+
+        prepareTasks();
+    }
+
+    private void prepareTasks() {
+        List<ClientTask> tasks = ClientTask.getTasks();
+        for (ClientTask task : tasks) {
+            JToggleButton btn = new JToggleButton();
+
+            btn.setText(task.getTitle());
+            btn.setFocusable(false);
+            btn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+            btn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+            btn.addActionListener((java.awt.event.ActionEvent evt) -> {
+                if (isBusy()) {
+                    btn.setSelected(false);
+                    return;
+                }
+                if (client == null) {
+                    btn.setSelected(false);
+                    return;
+                }
+                EntityManagerFactory emf = client.getEMF();
+
+                setBusy(true);
+                btn.setEnabled(false);
+                new Thread(() -> {
+                    task.execute(emf);
+                    setBusy(false);
+                    AWTThreadTools.onReady(() -> {
+                        btn.setSelected(false);
+                        btn.setEnabled(true);
+                    });
+                }).start();
+            });
+            tasksToolBar.add(btn);
+
+        }
     }
 
     private boolean busy;
 
-    private void flagExecution(boolean busy) {
-        java.awt.EventQueue.invokeLater(() -> {
+    private void setBusy(boolean busy) {
+        AWTThreadTools.onReady(() -> {
             if (busy) {
+                tasksToolBar.setEnabled(false);
                 executionLabel.setForeground(Color.RED);
             } else {
+                tasksToolBar.setEnabled(true);
                 executionLabel.setForeground(Color.GREEN);
             }
             this.busy = busy;
@@ -119,10 +150,18 @@ public class ApplicationFrame extends javax.swing.JFrame {
         jToolBar2 = new javax.swing.JToolBar();
         executionLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
-        jToolBar1 = new javax.swing.JToolBar();
-        mainloopToggleButton = new javax.swing.JToggleButton();
+        tasksToolBar = new javax.swing.JToolBar();
+        connectToggleButton = new javax.swing.JToggleButton();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
+        exitButton = new javax.swing.JButton();
+        jSeparator2 = new javax.swing.JToolBar.Separator();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                formComponentShown(evt);
+            }
+        });
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
@@ -141,7 +180,6 @@ public class ApplicationFrame extends javax.swing.JFrame {
 
         jPanel2.add(jTabbedPane1, java.awt.BorderLayout.CENTER);
 
-        jToolBar2.setFloatable(false);
         jToolBar2.setRollover(true);
 
         executionLabel.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
@@ -155,20 +193,33 @@ public class ApplicationFrame extends javax.swing.JFrame {
 
         jPanel1.setLayout(new java.awt.BorderLayout());
 
-        jToolBar1.setRollover(true);
+        tasksToolBar.setRollover(true);
 
-        mainloopToggleButton.setText("Run");
-        mainloopToggleButton.setFocusable(false);
-        mainloopToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        mainloopToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        mainloopToggleButton.addActionListener(new java.awt.event.ActionListener() {
+        connectToggleButton.setText("Connect");
+        connectToggleButton.setFocusable(false);
+        connectToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        connectToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        connectToggleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mainloopToggleButtonActionPerformed(evt);
+                connectToggleButtonActionPerformed(evt);
             }
         });
-        jToolBar1.add(mainloopToggleButton);
+        tasksToolBar.add(connectToggleButton);
+        tasksToolBar.add(jSeparator1);
 
-        jPanel1.add(jToolBar1, java.awt.BorderLayout.PAGE_START);
+        exitButton.setText("Exit");
+        exitButton.setFocusable(false);
+        exitButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        exitButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        exitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exitButtonActionPerformed(evt);
+            }
+        });
+        tasksToolBar.add(exitButton);
+        tasksToolBar.add(jSeparator2);
+
+        jPanel1.add(tasksToolBar, java.awt.BorderLayout.PAGE_START);
 
         jSplitPane1.setLeftComponent(jPanel1);
 
@@ -176,11 +227,11 @@ public class ApplicationFrame extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 689, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
         );
 
         pack();
@@ -202,22 +253,33 @@ public class ApplicationFrame extends javax.swing.JFrame {
         System.exit(0);
     }//GEN-LAST:event_formWindowClosing
 
-    private void mainloopToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mainloopToggleButtonActionPerformed
+    private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
+        prepare();
+    }//GEN-LAST:event_formComponentShown
+
+    private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
+        formWindowClosing(null);
+    }//GEN-LAST:event_exitButtonActionPerformed
+
+    private void connectToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectToggleButtonActionPerformed
         if (isBusy()) {
+            connectToggleButton.setSelected(!connectToggleButton.isSelected());
             return;
         }
-        flagExecution(true);
-        mainloopToggleButton.setEnabled(false);
-        new Thread(() -> {
-            client.mainLoop();
-            flagExecution(false);
-            java.awt.EventQueue.invokeLater(() -> {
-                mainloopToggleButton.setSelected(false);
-                mainloopToggleButton.setEnabled(true);
-            });
-        }).start();
-
-    }//GEN-LAST:event_mainloopToggleButtonActionPerformed
+        setBusy(true);
+        if (this.client != null) {
+            try {
+                this.client.close();
+            } catch (Exception ex) {
+                Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            this.client = null;
+        }
+        if (connectToggleButton.isSelected()) {
+            this.client = new Client();
+        }
+        setBusy(false);
+    }//GEN-LAST:event_connectToggleButtonActionPerformed
 
     void beforeExit() {
 
@@ -236,16 +298,19 @@ public class ApplicationFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JToggleButton connectToggleButton;
     private javax.swing.JLabel executionLabel;
+    private javax.swing.JButton exitButton;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JToolBar.Separator jSeparator1;
+    private javax.swing.JToolBar.Separator jSeparator2;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JToolBar jToolBar2;
     private javax.swing.JScrollPane logScrollPane;
     private javax.swing.JTextPane logTextPane;
-    private javax.swing.JToggleButton mainloopToggleButton;
+    private javax.swing.JToolBar tasksToolBar;
     // End of variables declaration//GEN-END:variables
 
 }

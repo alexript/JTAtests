@@ -21,15 +21,9 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import net.napilnik.entitymodel.Application;
-import net.napilnik.entitymodel.ApplicationController;
-import net.napilnik.entitymodel.Document;
-import net.napilnik.entitymodel.DocumentController;
 
 /**
  *
@@ -59,42 +53,10 @@ public class Client implements AutoCloseable {
         tm.shutdown();
     }
 
-    public final void mainLoop() {
-        try (ApplicationController ac = new ApplicationController(emf);
-                DocumentController c = new DocumentController(emf)
-                ) {
-            int iterations = 50;
-            int counter = 0;
-            
-            Application app = new Application("infinite-app");
-            ac.create(app);
-            
-            while (counter < iterations) {
-
-                Document d = new Document(app, "doc.random", Long.toString(new Date().getTime()));
-                c.create(d);
-                Long id = d.getId();
-                Thread.sleep(200);
-                long expectExistedId = id / 4;
-                Document someDoc = c.find(expectExistedId);
-                if (someDoc != null) {
-                    someDoc.addChildDocument(d);
-                    c.update(someDoc);
-                    Thread.sleep(200);
-                    List<Document> parents = c.getParents(someDoc);
-
-                }
-                counter++;
-            }
-        } catch (Exception ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
     public static void main(String[] args) {
         System.setProperty("sun.java2d.dpiaware", "true");
 
-         try (InputStream fis = Client.class.getResourceAsStream("logging.properties")) {
+        try (InputStream fis = Client.class.getResourceAsStream("logging.properties")) {
             LogManager.getLogManager().readConfiguration(fis);
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
@@ -114,7 +76,7 @@ public class Client implements AutoCloseable {
         }
         //</editor-fold>
 
-        java.awt.EventQueue.invokeLater(() -> {
+        AWTThreadTools.onReady(() -> {
             new ApplicationFrame().setVisible(true);
         });
 

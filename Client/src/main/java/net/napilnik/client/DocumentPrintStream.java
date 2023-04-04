@@ -17,6 +17,7 @@ package net.napilnik.client;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import javax.swing.JScrollBar;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
@@ -27,29 +28,38 @@ import javax.swing.text.Document;
 class DocumentPrintStream extends PrintStream {
 
     private final Document document;
-    private static final boolean PASS_TO_DELEGATE = false;
+    private static final boolean PASS_TO_DELEGATE = true;
+    private static final Object sync = new Object();
+    private final JScrollBar vScroll;
 
-    public DocumentPrintStream(Document document, OutputStream delegateStream) {
+    public DocumentPrintStream(JScrollBar vScroll, Document document, OutputStream delegateStream) {
         super(delegateStream);
         this.document = document;
+        this.vScroll = vScroll;
     }
 
     @Override
     public void write(byte[] buf, int off, int len) {
-        byte[] b = new byte[len];
-        for (int i = 0; i < len; i++) {
-            b[i] = buf[off + i];
+        synchronized (sync) {
+
+            byte[] b = new byte[len];
+            for (int i = 0; i < len; i++) {
+                b[i] = buf[off + i];
+            }
+
+            String string = new String(b);
+            int offset = document.getLength();
+            try {
+                document.insertString(offset, string + "\n", null);
+            } catch (BadLocationException e) {
+            }
+            if (PASS_TO_DELEGATE) {
+                super.write(buf, off, len);
+            }
+            AWTThreadTools.onReady(()
+                    -> vScroll.setValue(vScroll.getMaximum()));
         }
 
-        String string = new String(b);
-        int offset = document.getLength();
-        try {
-            document.insertString(offset, string + "\n", null);
-        } catch (BadLocationException e) {
-        }
-        if (PASS_TO_DELEGATE) {
-            super.write(buf, off, len);
-        }
     }
 
 }
