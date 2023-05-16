@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.napilnik.client;
+package net.napilnik.ui;
 
+import net.napilnik.ui.AWTThreadTools;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import javax.swing.JScrollBar;

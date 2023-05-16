@@ -16,7 +16,7 @@
             <artifactId>hsqldb</artifactId>
             <version>2.7.1</version>
         </dependency>
-       
+
         <dependency>
             <groupId>com.github.marcus-nl.btm</groupId>
             <artifactId>btm-jetty9-lifecycle</artifactId>
@@ -27,8 +27,8 @@
             <artifactId>jetty-server</artifactId>
             <version>9.4.16.v20190411</version>
         </dependency>
-        
-        
+
+
 
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -45,11 +45,11 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.13.0</version>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>EntityModel</artifactId>
             <version>${project.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>

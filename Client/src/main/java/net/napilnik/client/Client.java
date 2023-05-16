@@ -15,6 +15,7 @@
  */
 package net.napilnik.client;
 
+import net.napilnik.ui.AWTThreadTools;
 import bitronix.tm.BitronixTransactionManager;
 import bitronix.tm.Configuration;
 import bitronix.tm.TransactionManagerServices;
@@ -93,7 +94,7 @@ public class Client implements AutoCloseable {
         //</editor-fold>
 
         AWTThreadTools.onReady(() -> {
-            new ApplicationFrame().setVisible(true);
+            new ApplicationFrame("jtaclient.properties").setVisible(true);
         });
 
     }

@@ -9,6 +9,7 @@
         <module>EntityModel</module>
         <module>Server</module>
         <module>Client</module>
+        <module>UI</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

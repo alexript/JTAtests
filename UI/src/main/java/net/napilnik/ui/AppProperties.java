@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.napilnik.client;
+package net.napilnik.ui;
 
 import java.awt.Dimension;
 import java.io.File;
@@ -33,17 +33,17 @@ public class AppProperties extends Properties {
 
     private static final long serialVersionUID = 6210907450490298467L;
 
-    private static final String PROPS_FILENAME = "jtaclient.properties";
-
     private static final String WINDOW_X = "window.X";
     private static final String WINDOW_Y = "window.Y";
     private static final String WINDOW_W = "window.W";
     private static final String WINDOW_H = "window.H";
     private static final String WINDOW_MAXIMIZED = "window.maximazed";
     private static final String WINDOW_DIVIDER = "window.divider";
+    private final String propsFile;
 
-    public AppProperties() {
+    public AppProperties(String propsFile) {
         super();
+        this.propsFile = propsFile;
         readProps();
     }
 
@@ -56,7 +56,7 @@ public class AppProperties extends Properties {
         }
     }
 
-    protected void writeProps() {
+    public void writeProps() {
         File file = getPropsFile();
         try (OutputStream os = new FileOutputStream(file)) {
             this.store(os, "");
@@ -66,7 +66,7 @@ public class AppProperties extends Properties {
     }
 
     private File getPropsFile() {
-        File file = new File(PROPS_FILENAME);
+        File file = new File(propsFile);
         return file;
     }
 
@@ -88,50 +88,50 @@ public class AppProperties extends Properties {
         this.setProperty(name, Boolean.toString(v));
     }
 
-    void setX(int x) {
+    public void setX(int x) {
         this.set(WINDOW_X, x);
     }
 
-    void setY(int y) {
+    public void setY(int y) {
         this.set(WINDOW_Y, y);
     }
 
-    void setSize(Dimension size) {
+    public void setSize(Dimension size) {
         this.set(WINDOW_W, size.width);
         this.set(WINDOW_H, size.height);
     }
 
-    int getX() {
+    public int getX() {
         return this.getInt(WINDOW_X, 10);
     }
 
-    int getY() {
+    public int getY() {
         return this.getInt(WINDOW_Y, 10);
     }
 
-    Dimension getSize() {
+    public Dimension getSize() {
         int w = this.getInt(WINDOW_W, 1000);
         int h = this.getInt(WINDOW_H, 700);
         return new Dimension(w, h);
     }
 
-    int getDividerPosition(int defpos) {
+    public int getDividerPosition(int defpos) {
         return this.getInt(WINDOW_DIVIDER, defpos);
     }
 
-    int getDividerPosition() {
+    public int getDividerPosition() {
         return getDividerPosition(500);
     }
 
-    void setDividerPosition(int pos) {
+    public void setDividerPosition(int pos) {
         this.set(WINDOW_DIVIDER, pos);
     }
 
-    boolean getMaximized() {
+    public boolean getMaximized() {
         return this.getBool(WINDOW_MAXIMIZED, false);
     }
 
-    void setMaximized(boolean val) {
+    public void setMaximized(boolean val) {
         this.set(WINDOW_MAXIMIZED, val);
     }
 
