@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import net.napilnik.ui.LookAndFeel;
 
 /**
  *
@@ -71,27 +72,7 @@ public class Client implements AutoCloseable {
     }
 
     public static void main(String[] args) {
-        System.setProperty("sun.java2d.dpiaware", "true");
-
-        try (InputStream fis = Client.class.getResourceAsStream("logging.properties")) {
-            LogManager.getLogManager().readConfiguration(fis);
-        } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* Set the Nimbus look and feel */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
+        LookAndFeel.apply(Client.class);
 
         AWTThreadTools.onReady(() -> {
             new ApplicationFrame("jtaclient.properties").setVisible(true);
