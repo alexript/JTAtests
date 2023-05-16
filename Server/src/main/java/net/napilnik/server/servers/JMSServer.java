@@ -15,7 +15,6 @@
  */
 package net.napilnik.server.servers;
 
-import bitronix.tm.BitronixTransactionManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.napilnik.server.IServer;
@@ -27,21 +26,12 @@ import org.apache.activemq.broker.BrokerService;
  */
 public class JMSServer implements IServer {
 
-    private Thread jtaThread;
     private BrokerService broker;
 
     public JMSServer() {
         try {
             broker = new BrokerService();
             broker.addConnector("tcp://localhost:61616");
-            jtaThread = new Thread(() -> {
-                try {
-
-                    broker.start();
-                } catch (Exception ex) {
-                    Logger.getLogger(JMSServer.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            });
         } catch (Exception ex) {
             Logger.getLogger(JMSServer.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -49,14 +39,13 @@ public class JMSServer implements IServer {
 
     @Override
     public void start() throws Exception {
-        jtaThread.start();
-//        Thread.sleep(3000);
+        broker.start();
     }
 
     @Override
     public void stop() throws Exception {
         broker.stop();
-       
+
     }
 
 }
