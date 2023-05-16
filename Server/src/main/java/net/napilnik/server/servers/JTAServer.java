@@ -16,22 +16,25 @@
 package net.napilnik.server.servers;
 
 import bitronix.tm.BitronixTransactionManager;
+import bitronix.tm.TransactionManagerServices;
 import net.napilnik.server.IServer;
 
 /**
  *
  * @author malyshev
  */
-public class JTAServer implements IServer{
+public class JTAServer implements IServer {
+
+    private BitronixTransactionManager transactionManager;
 
     @Override
     public void start() throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        transactionManager = TransactionManagerServices.getTransactionManager();
     }
 
     @Override
     public void stop() throws Exception {
-         new BitronixTransactionManager().shutdown();
+        transactionManager.shutdown();
     }
 
 }
