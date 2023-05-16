@@ -19,7 +19,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.napilnik.server.servers.DatabaseServer;
 import net.napilnik.server.servers.HttpServer;
-import net.napilnik.server.servers.TransactionsServer;
+import net.napilnik.server.servers.JMSServer;
+import net.napilnik.server.servers.JTAServer;
 import net.napilnik.ui.AbstractApplicationFrame;
 
 /**
@@ -31,7 +32,8 @@ public class ApplicationFrame extends AbstractApplicationFrame {
     private static final long serialVersionUID = -7600713126343668675L;
     private HttpServer httpServer;
     private DatabaseServer databaseServer;
-    private TransactionsServer transactionsServer;
+    private JMSServer jmsServer;
+    private JTAServer jtaServer;
 
     public ApplicationFrame(String propsFile) {
         super(propsFile);
@@ -40,11 +42,12 @@ public class ApplicationFrame extends AbstractApplicationFrame {
     @Override
     protected void onWindowShow() {
         try {
-            this.databaseServer = new DatabaseServer();
+            databaseServer = new DatabaseServer();
             databaseServer.start();
-            transactionsServer = new TransactionsServer();
-            transactionsServer.start();
-            this.httpServer = new HttpServer();
+            jmsServer = new JMSServer();
+            jmsServer.start();
+            jtaServer = new JTAServer();
+            httpServer = new HttpServer();
             httpServer.start();
         } catch (Exception ex) {
             Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
@@ -59,7 +62,8 @@ public class ApplicationFrame extends AbstractApplicationFrame {
     @Override
     protected void onWindowClosing() {
         try {
-            transactionsServer.stop();
+            jtaServer.stop();
+            jmsServer.stop();
             databaseServer.stop();
             httpServer.stop();
         } catch (Exception ex) {

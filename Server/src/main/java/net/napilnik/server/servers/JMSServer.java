@@ -25,12 +25,12 @@ import org.apache.activemq.broker.BrokerService;
  *
  * @author malyshev
  */
-public class TransactionsServer implements IServer {
+public class JMSServer implements IServer {
 
     private Thread jtaThread;
     private BrokerService broker;
 
-    public TransactionsServer() {
+    public JMSServer() {
         try {
             broker = new BrokerService();
             broker.addConnector("tcp://localhost:61616");
@@ -39,11 +39,11 @@ public class TransactionsServer implements IServer {
 
                     broker.start();
                 } catch (Exception ex) {
-                    Logger.getLogger(TransactionsServer.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(JMSServer.class.getName()).log(Level.SEVERE, null, ex);
                 }
             });
         } catch (Exception ex) {
-            Logger.getLogger(TransactionsServer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(JMSServer.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -56,7 +56,7 @@ public class TransactionsServer implements IServer {
     @Override
     public void stop() throws Exception {
         broker.stop();
-        new BitronixTransactionManager().shutdown();
+       
     }
 
 }
