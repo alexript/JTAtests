@@ -15,7 +15,7 @@
  */
 package net.napilnik.client.tasks;
 
-import jakarta.persistence.EntityManagerFactory;
+import javax.persistence.EntityManagerFactory;
 import net.napilnik.client.ApplicationFrame;
 import net.napilnik.client.ClientTask;
 import net.napilnik.entitymodel.Application;

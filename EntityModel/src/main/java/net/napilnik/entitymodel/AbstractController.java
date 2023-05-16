@@ -15,19 +15,24 @@
  */
 package net.napilnik.entitymodel;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.NonUniqueResultException;
-import jakarta.persistence.Parameter;
-import jakarta.persistence.Persistence;
-import jakarta.persistence.TypedQuery;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
+import javax.persistence.Parameter;
+import javax.persistence.Persistence;
+import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.persistence.spi.PersistenceUnitTransactionType;
+import static javax.persistence.spi.PersistenceUnitTransactionType.JTA;
+import net.napilnik.entitymodel.transactions.TheEntityTransaction;
+import net.napilnik.entitymodel.transactions.TheUserTransaction;
+import org.eclipse.persistence.jpa.JpaHelper;
+import net.napilnik.entitymodel.transactions.TheTransaction;
 
 /**
  * Basic CRUD operations for all entity controllers.
@@ -38,6 +43,7 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseable {
 
+    public static final String JNDI_TRANSACTION_MANAGER = "java:appserver/TransactionManager";
     /**
      * Working EntityManager instance.
      */
@@ -53,6 +59,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      * outside this object.
      */
     private boolean incapsulatedEMF;
+    private PersistenceUnitTransactionType transactionType;
 
     /**
      * Create CRUD controller on existed EntityManagerFactory.
@@ -67,6 +74,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
         this.emf = emf;
         this.em = emf.createEntityManager();
         this.incapsulatedEMF = false;
+        transactionType = JpaHelper.getEntityManagerFactory(emf).unwrap().getSetupImpl().getPersistenceUnitInfo().getTransactionType();
     }
 
     /**
@@ -93,13 +101,23 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
         }
     }
 
+    private TheTransaction createTx() {
+        TheTransaction transaction;
+        if (transactionType == JTA) {
+            transaction = new TheUserTransaction(em);
+        } else {
+            transaction = new TheEntityTransaction(em);
+        }
+        return transaction;
+    }
+
     /**
      * Create and begin Transaction.
      *
      * @return started transaction
      */
-    public final EntityTransaction createTransaction() {
-        EntityTransaction tr = em.getTransaction();
+    public final TheTransaction createTransaction() {
+        TheTransaction tr = createTx();
         tr.begin();
         return tr;
     }
@@ -111,7 +129,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      * @return true on success
      */
     public final boolean create(ENTITY entity) {
-        EntityTransaction tr = em.getTransaction();
+        TheTransaction tr = createTx();
         try {
             tr.begin();
             create(tr, entity);
@@ -130,7 +148,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      * @param tr started transaction
      * @param entity @Entity object
      */
-    public final void create(EntityTransaction tr, ENTITY entity) {
+    public final void create(TheTransaction tr, ENTITY entity) {
         em.persist(entity);
     }
 
@@ -141,7 +159,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      * @return true on success
      */
     public final boolean delete(ENTITY entity) {
-        EntityTransaction tr = em.getTransaction();
+        TheTransaction tr = createTx();
         try {
             tr.begin();
             delete(tr, entity);
@@ -160,7 +178,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      * @param tr started transaction
      * @param entity @Entity object
      */
-    public final void delete(EntityTransaction tr, ENTITY entity) {
+    public final void delete(TheTransaction tr, ENTITY entity) {
         em.remove(entity);
     }
 
@@ -171,7 +189,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      * @return true on success
      */
     public final boolean update(ENTITY entity) {
-        EntityTransaction tr = em.getTransaction();
+        TheTransaction tr = createTx();
         try {
             tr.begin();
             update(tr, entity);
@@ -190,7 +208,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      * @param tr started transaction
      * @param entity @Entity object
      */
-    public final void update(EntityTransaction tr, ENTITY entity) {
+    public final void update(TheTransaction tr, ENTITY entity) {
         em.merge(entity);
     }
 

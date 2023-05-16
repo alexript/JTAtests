@@ -15,7 +15,7 @@
  */
 package net.napilnik.client.tasks;
 
-import jakarta.persistence.EntityManagerFactory;
+import javax.persistence.EntityManagerFactory;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;

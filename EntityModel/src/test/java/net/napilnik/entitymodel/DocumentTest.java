@@ -15,9 +15,9 @@
  */
 package net.napilnik.entitymodel;
 
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
+import javax.persistence.Persistence;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import net.napilnik.entitymodel.transactions.TheTransaction;
 
 /**
  * Tests for Document and DocumentController. SQL query logging for executed SQL
@@ -358,7 +359,7 @@ public class DocumentTest {
         Date startNow = printTestHeader("testBasicTransaction");
         int documentsNumber = 10;
         try (DocumentController c = new DocumentController(emf)) {
-            EntityTransaction tr = c.createTransaction();
+            TheTransaction tr = c.createTransaction();
             try {
                 for (int counter = 0; counter < documentsNumber; counter++) {
                     c.create(tr, new Document(app, MNEMO_1, "doc-transacted-" + counter));
@@ -379,7 +380,7 @@ public class DocumentTest {
     public void testCRUDTransaction() {
         Date startNow = printTestHeader("testCRUDTransaction");
         try (DocumentController c = new DocumentController(emf)) {
-            EntityTransaction tr = c.createTransaction();
+            TheTransaction tr = c.createTransaction();
             try {
                 Document doc = new Document(app, MNEMO_1, "doc-transacted-crud");
                 c.create(tr, doc);

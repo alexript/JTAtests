@@ -19,14 +19,12 @@ import net.napilnik.ui.AWTThreadTools;
 import bitronix.tm.BitronixTransactionManager;
 import bitronix.tm.Configuration;
 import bitronix.tm.TransactionManagerServices;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import java.io.File;
 import java.util.Date;
+import static net.napilnik.entitymodel.AbstractController.JNDI_TRANSACTION_MANAGER;
 import net.napilnik.ui.LookAndFeel;
-import org.eclipse.persistence.internal.sessions.AbstractSession;
-import org.eclipse.persistence.jpa.JpaHelper;
-import org.eclipse.persistence.transaction.JTA11TransactionController;
 
 /**
  *
@@ -46,10 +44,12 @@ public class Client implements AutoCloseable {
         File logsFolder = new File("jta-logs", clientId);
         conf.setLogPart1Filename(new File(logsFolder, "part1.btm").getAbsolutePath());
         conf.setLogPart2Filename(new File(logsFolder, "part2.btm").getAbsolutePath());
-        conf.setJndiUserTransactionName("java:comp/UserTransaction");
+        conf.setJndiUserTransactionName(JNDI_TRANSACTION_MANAGER);
+//        conf.setJndiUserTransactionName("java:comp/UserTransaction");
         conf.setResourceConfigurationFilename("resources.properties");
         return TransactionManagerServices.getTransactionManager();
     }
+    
 
     public Client() {
         tm = connect();

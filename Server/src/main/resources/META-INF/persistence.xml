@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persistence version="3.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_3_0.xsd">
+<persistence version="2.1" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
     <persistence-unit name="model" transaction-type="JTA">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <jta-data-source>hsqldb</jta-data-source>
@@ -8,7 +8,8 @@
 
         <shared-cache-mode>ALL</shared-cache-mode>
         <properties>
-            <property name="jakarta.persistence.jtaDataSource" value="hsqldb" />
+            <property name="javax.persistence.jtaDataSource" value="hsqldb" />
+            <property name="eclipselink.target-server" value="Glassfish"/>
 
             <property name="eclipselink.ddl-generation" value="create-or-extend-tables"/>
             <property name="eclipselink.ddl-generation.output-mode" value="database"/>

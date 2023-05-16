@@ -15,7 +15,7 @@
  */
 package net.napilnik.entitymodel;
 
-import jakarta.persistence.EntityManagerFactory;
+import javax.persistence.EntityManagerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

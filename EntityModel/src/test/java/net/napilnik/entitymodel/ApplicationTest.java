@@ -15,9 +15,9 @@
  */
 package net.napilnik.entitymodel;
 
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
+import javax.persistence.Persistence;
 import java.util.Collection;
 import java.util.Date;
 import static net.napilnik.entitymodel.Headers.printTestFooter;
@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import net.napilnik.entitymodel.transactions.TheTransaction;
 
 /**
  *
@@ -91,7 +92,7 @@ public class ApplicationTest {
 
         try (ApplicationController ac = new ApplicationController(emf); DocumentController dc = new DocumentController(emf)) {
 
-            EntityTransaction tx = dc.createTransaction();
+            TheTransaction tx = dc.createTransaction();
             try {
                 dc.create(tx, new Document(app, "t", "1"));
                 dc.create(tx, new Document(app, "t", "2"));

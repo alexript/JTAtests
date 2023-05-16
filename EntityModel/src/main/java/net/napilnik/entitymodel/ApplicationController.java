@@ -15,8 +15,8 @@
  */
 package net.napilnik.entitymodel;
 
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.TypedQuery;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Map;
 

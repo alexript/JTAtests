@@ -15,8 +15,7 @@
  */
 package net.napilnik.client.tasks;
 
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
+import javax.persistence.EntityManagerFactory;
 import java.util.Date;
 import net.napilnik.client.ApplicationFrame;
 import net.napilnik.client.ClientTask;
@@ -24,6 +23,7 @@ import net.napilnik.entitymodel.Application;
 import net.napilnik.entitymodel.ApplicationController;
 import net.napilnik.entitymodel.Document;
 import net.napilnik.entitymodel.DocumentController;
+import net.napilnik.entitymodel.transactions.TheTransaction;
 
 /**
  *
@@ -40,7 +40,7 @@ public class CreateDocsTask implements ClientTask {
                 app = new Application(appMnemo);
                 ac.create(app);
             }
-            EntityTransaction tx = dc.createTransaction();
+            TheTransaction tx = dc.createTransaction();
             try {
                 for (int i = 0; i < 10; i++) {
                     dc.create(tx, new Document(app, "tenbyten", "tbt-%d".formatted(new Date().getTime())));

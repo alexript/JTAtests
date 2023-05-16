@@ -16,7 +16,7 @@
 package net.napilnik.client;
 
 import net.napilnik.ui.AWTThreadTools;
-import jakarta.persistence.EntityManagerFactory;
+import javax.persistence.EntityManagerFactory;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;

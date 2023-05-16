@@ -16,7 +16,7 @@
 package net.napilnik.client;
 
 import com.google.common.reflect.ClassPath;
-import jakarta.persistence.EntityManagerFactory;
+import javax.persistence.EntityManagerFactory;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
