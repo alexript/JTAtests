@@ -22,12 +22,7 @@ import bitronix.tm.TransactionManagerServices;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 import net.napilnik.ui.LookAndFeel;
 
 /**

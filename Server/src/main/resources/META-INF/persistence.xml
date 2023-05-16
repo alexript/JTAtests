@@ -5,7 +5,7 @@
         <jta-data-source>hsqldb</jta-data-source>
         <class>net.napilnik.entitymodel.Application</class>
         <class>net.napilnik.entitymodel.Document</class>
-        
+
         <shared-cache-mode>ALL</shared-cache-mode>
         <properties>
             <property name="jakarta.persistence.jtaDataSource" value="hsqldb" />
@@ -21,6 +21,7 @@
             <property name="eclipselink.jdbc.cache-size" value="5000"/>
             <property name="eclipselink.jdbc.bind-parameters" value="true"/>
 
+            <property name="eclipselink.logging.logger" value="net.napilnik.ui.UILogger"/>
             <property name="eclipselink.logging.level.sql" value="FINEST"/>
             <property name="eclipselink.logging.parameters" value="true"/>
 

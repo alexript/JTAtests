@@ -41,7 +41,6 @@ public class ApplicationFrame extends AbstractApplicationFrame {
      */
     public ApplicationFrame(String propsFile) {
         super(propsFile);
-
     }
 
     @Override
