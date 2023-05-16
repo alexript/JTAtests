@@ -24,6 +24,9 @@ import jakarta.persistence.Persistence;
 import java.io.File;
 import java.util.Date;
 import net.napilnik.ui.LookAndFeel;
+import org.eclipse.persistence.internal.sessions.AbstractSession;
+import org.eclipse.persistence.jpa.JpaHelper;
+import org.eclipse.persistence.transaction.JTA11TransactionController;
 
 /**
  *
@@ -33,11 +36,12 @@ public class Client implements AutoCloseable {
 
     private final BitronixTransactionManager tm;
     private final EntityManagerFactory emf;
+    private Configuration conf;
 
     private BitronixTransactionManager connect() {
         long now = new Date().getTime();
         String clientId = "client-%d".formatted(now);
-        Configuration conf = TransactionManagerServices.getConfiguration();
+        conf = TransactionManagerServices.getConfiguration();
         conf.setServerId(clientId);
         File logsFolder = new File("jta-logs", clientId);
         conf.setLogPart1Filename(new File(logsFolder, "part1.btm").getAbsolutePath());
@@ -50,6 +54,8 @@ public class Client implements AutoCloseable {
     public Client() {
         tm = connect();
         emf = Persistence.createEntityManagerFactory("model");
+//        AbstractSession session = JpaHelper.getEntityManagerFactory(emf).getDatabaseSession();
+//        session.setExternalTransactionController(new JTA11TransactionController());
     }
 
     public final BitronixTransactionManager getTM() {
@@ -58,6 +64,10 @@ public class Client implements AutoCloseable {
 
     public final EntityManagerFactory getEMF() {
         return emf;
+    }
+
+    public final Configuration getConfiguration() {
+        return conf;
     }
 
     @Override

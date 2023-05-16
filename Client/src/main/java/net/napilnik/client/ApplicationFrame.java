@@ -43,6 +43,10 @@ public class ApplicationFrame extends AbstractApplicationFrame {
         super(propsFile);
     }
 
+    public Client getClient() {
+        return client;
+    }
+
     @Override
     protected void onInitComponents() {
         jSeparator1 = new javax.swing.JToolBar.Separator();
@@ -74,20 +78,28 @@ public class ApplicationFrame extends AbstractApplicationFrame {
             btn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
             btn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
             btn.addActionListener((java.awt.event.ActionEvent evt) -> {
+
                 if (isBusy()) {
                     btn.setSelected(false);
                     return;
                 }
-                if (client == null) {
+
+                if (task.isConnectionRecuired() && client == null) {
                     btn.setSelected(false);
                     return;
                 }
-                EntityManagerFactory emf = client.getEMF();
+
+                if (task.isDisconnectionRecuired() && client != null) {
+                    btn.setSelected(false);
+                    return;
+                }
+
+                EntityManagerFactory emf = task.isConnectionRecuired() ? client.getEMF() : null;
 
                 setBusy(true);
                 btn.setEnabled(false);
                 new Thread(() -> {
-                    task.execute(emf);
+                    task.execute(emf, ApplicationFrame.this);
                     setBusy(false);
                     AWTThreadTools.onReady(() -> {
                         btn.setSelected(false);

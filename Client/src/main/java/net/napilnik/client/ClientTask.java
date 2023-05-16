@@ -30,11 +30,15 @@ import java.util.logging.Logger;
  */
 public interface ClientTask {
 
-    void execute(EntityManagerFactory emf);
+    void execute(EntityManagerFactory emf, ApplicationFrame frame);
 
     String getTitle();
 
     int getWeight();
+
+    boolean isConnectionRecuired();
+
+    boolean isDisconnectionRecuired();
 
     static List<ClientTask> getTasks() {
         List<ClientTask> tasks = new ArrayList<>();
@@ -66,4 +70,5 @@ public interface ClientTask {
         }
         return tasks;
     }
+
 }

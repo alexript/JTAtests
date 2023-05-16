@@ -18,6 +18,7 @@ package net.napilnik.client.tasks;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import java.util.Date;
+import net.napilnik.client.ApplicationFrame;
 import net.napilnik.client.ClientTask;
 import net.napilnik.entitymodel.Application;
 import net.napilnik.entitymodel.ApplicationController;
@@ -31,7 +32,7 @@ import net.napilnik.entitymodel.DocumentController;
 public class CreateDocsTask implements ClientTask {
 
     @Override
-    public void execute(EntityManagerFactory emf) {
+    public void execute(EntityManagerFactory emf, ApplicationFrame frame) {
         try (ApplicationController ac = new ApplicationController(emf); DocumentController dc = new DocumentController(emf)) {
             String appMnemo = "tenbyten-app";
             Application app = ac.find(appMnemo);
@@ -44,6 +45,7 @@ public class CreateDocsTask implements ClientTask {
                 for (int i = 0; i < 10; i++) {
                     dc.create(tx, new Document(app, "tenbyten", "tbt-%d".formatted(new Date().getTime())));
                 }
+               // new javax.naming.InitialContext().lookup("java:comp/UserTransaction");
                 tx.commit();
                 ac.update(app);
             } catch (Exception ex) {
@@ -61,6 +63,16 @@ public class CreateDocsTask implements ClientTask {
     @Override
     public int getWeight() {
         return 10;
+    }
+
+    @Override
+    public boolean isConnectionRecuired() {
+        return true;
+    }
+
+    @Override
+    public boolean isDisconnectionRecuired() {
+        return false;
     }
 
 }

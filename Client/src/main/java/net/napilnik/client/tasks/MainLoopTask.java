@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.napilnik.client.ApplicationFrame;
 import net.napilnik.client.ClientTask;
 import net.napilnik.entitymodel.Application;
 import net.napilnik.entitymodel.ApplicationController;
@@ -33,7 +34,7 @@ import net.napilnik.entitymodel.DocumentController;
 public class MainLoopTask implements ClientTask {
 
     @Override
-    public void execute(EntityManagerFactory emf) {
+    public void execute(EntityManagerFactory emf, ApplicationFrame frame) {
         try (ApplicationController ac = new ApplicationController(emf); DocumentController c = new DocumentController(emf)) {
             int iterations = 50;
             int counter = 0;
@@ -76,6 +77,16 @@ public class MainLoopTask implements ClientTask {
     @Override
     public int getWeight() {
         return 1000;
+    }
+
+    @Override
+    public boolean isConnectionRecuired() {
+        return true;
+    }
+
+    @Override
+    public boolean isDisconnectionRecuired() {
+        return false;
     }
 
 }

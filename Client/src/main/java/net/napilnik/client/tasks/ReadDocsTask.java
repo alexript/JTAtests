@@ -16,6 +16,7 @@
 package net.napilnik.client.tasks;
 
 import jakarta.persistence.EntityManagerFactory;
+import net.napilnik.client.ApplicationFrame;
 import net.napilnik.client.ClientTask;
 import net.napilnik.entitymodel.Application;
 import net.napilnik.entitymodel.ApplicationController;
@@ -24,16 +25,16 @@ import net.napilnik.entitymodel.ApplicationController;
  *
  * @author alexript
  */
-public class ReadDocsTask implements ClientTask{
+public class ReadDocsTask implements ClientTask {
 
     @Override
-    public void execute(EntityManagerFactory emf) {
-        try(ApplicationController ac = new ApplicationController(emf)) {
+    public void execute(EntityManagerFactory emf, ApplicationFrame frame) {
+        try (ApplicationController ac = new ApplicationController(emf)) {
             Application app = ac.find("tenbyten-app");
-            if(app==null) {
+            if (app == null) {
                 return;
             }
-            
+
             System.out.println("Found %d documents.".formatted(app.getDocuments().size()));
         }
     }
@@ -47,5 +48,15 @@ public class ReadDocsTask implements ClientTask{
     public int getWeight() {
         return 20;
     }
-    
+
+    @Override
+    public boolean isConnectionRecuired() {
+        return true;
+    }
+
+    @Override
+    public boolean isDisconnectionRecuired() {
+        return false;
+    }
+
 }
