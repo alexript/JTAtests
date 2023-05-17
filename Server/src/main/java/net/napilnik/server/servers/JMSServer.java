@@ -45,7 +45,6 @@ public class JMSServer implements IServer {
     @Override
     public void stop() throws Exception {
         broker.stop();
-
     }
 
 }

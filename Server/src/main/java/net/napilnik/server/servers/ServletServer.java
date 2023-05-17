@@ -15,40 +15,37 @@
  */
 package net.napilnik.server.servers;
 
-import bitronix.tm.integration.jetty9.BTMLifeCycle;
-import net.napilnik.server.HttpHandler;
+import java.net.URL;
 import net.napilnik.server.IServer;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
  *
  * @author malyshev
  */
-public class HttpServer implements IServer {
+public class ServletServer implements IServer {
 
     private final Server server;
 
-    public HttpServer() {
-        this.server = new org.eclipse.jetty.server.Server(8080);
-        for (AbstractHandler h : HttpHandler.getHandlers()) {
-            server.setHandler(h);
-        }
-        server.addManaged(new BTMLifeCycle());
-    }
+    public ServletServer(HttpServer httpServer) {
+        server = httpServer.getServer();
 
-    public Server getServer() {
-        return server;
+//        URL resource = ServletServer.class.getResource("/META-INF/servlets/activemq-web-console-5.15.9.war");
+//        if (resource != null) {
+//            WebAppContext webAppContext = new WebAppContext(resource.toExternalForm(), "/active");
+//            server.setHandler(webAppContext);
+//        }
     }
 
     @Override
     public void start() throws Exception {
 
-        server.start();
     }
 
     @Override
     public void stop() throws Exception {
-        server.stop();
+
     }
+
 }

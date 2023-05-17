@@ -21,6 +21,7 @@ import net.napilnik.server.servers.DatabaseServer;
 import net.napilnik.server.servers.HttpServer;
 import net.napilnik.server.servers.JMSServer;
 import net.napilnik.server.servers.JTAServer;
+import net.napilnik.server.servers.ServletServer;
 import net.napilnik.ui.AbstractApplicationFrame;
 
 /**
@@ -34,6 +35,7 @@ public class ApplicationFrame extends AbstractApplicationFrame {
     private DatabaseServer databaseServer;
     private JMSServer jmsServer;
     private JTAServer jtaServer;
+    private ServletServer servletServer;
 
     public ApplicationFrame(String propsFile) {
         super(propsFile);
@@ -48,7 +50,9 @@ public class ApplicationFrame extends AbstractApplicationFrame {
             jmsServer.start();
             jtaServer = new JTAServer();
             httpServer = new HttpServer();
+            servletServer = new ServletServer(httpServer);
             httpServer.start();
+            servletServer.start();
         } catch (Exception ex) {
             Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -62,6 +66,7 @@ public class ApplicationFrame extends AbstractApplicationFrame {
     @Override
     protected void onWindowClosing() {
         try {
+            servletServer.stop();
             jtaServer.stop();
             jmsServer.stop();
             databaseServer.stop();
