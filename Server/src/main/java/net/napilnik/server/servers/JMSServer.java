@@ -31,7 +31,7 @@ public class JMSServer implements IServer {
     public JMSServer() {
         try {
             broker = new BrokerService();
-            broker.addConnector("tcp://localhost:61616");
+            broker.addConnector("tcp://127.0.0.1:61616");
         } catch (Exception ex) {
             Logger.getLogger(JMSServer.class.getName()).log(Level.SEVERE, null, ex);
         }

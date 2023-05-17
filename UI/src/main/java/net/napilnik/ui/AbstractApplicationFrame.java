@@ -49,6 +49,8 @@ public abstract class AbstractApplicationFrame extends javax.swing.JFrame {
         DocumentPrintStream outPrintStream = new DocumentPrintStream(logScrollPane.getVerticalScrollBar(), document, System.out);
         System.setOut(outPrintStream);
 
+        UIJulLogger.setOut(outPrintStream);
+
         LoggerDispatcher logDispatcher = new LoggerDispatcher(logsTabbedPane, outPrintStream);
         UILogger.setDispatcher(logDispatcher);
 
@@ -70,6 +72,8 @@ public abstract class AbstractApplicationFrame extends javax.swing.JFrame {
         setBusy(false);
 
         onWindowShow();
+        outPrintStream.setConsoleOutput(false);
+        errPrintStream.setConsoleOutput(false);
     }
 
     protected abstract void onWindowShow();

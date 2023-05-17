@@ -15,7 +15,6 @@
  */
 package net.napilnik.ui;
 
-import net.napilnik.ui.AWTThreadTools;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import javax.swing.JScrollBar;
@@ -29,14 +28,24 @@ import javax.swing.text.Document;
 class DocumentPrintStream extends PrintStream {
 
     private final Document document;
-    private static final boolean PASS_TO_DELEGATE = false;
+
     private static final Object sync = new Object();
     private final JScrollBar vScroll;
+    private boolean passToDelegate;
 
     public DocumentPrintStream(JScrollBar vScroll, Document document, OutputStream delegateStream) {
+        this(vScroll, document, delegateStream, true);
+    }
+
+    public DocumentPrintStream(JScrollBar vScroll, Document document, OutputStream delegateStream, boolean passToDelegate) {
         super(delegateStream);
         this.document = document;
         this.vScroll = vScroll;
+        this.passToDelegate = passToDelegate;
+    }
+
+    public void setConsoleOutput(boolean enable) {
+        passToDelegate = enable;
     }
 
     @Override
@@ -54,7 +63,7 @@ class DocumentPrintStream extends PrintStream {
                 document.insertString(offset, string + "\n", null);
             } catch (BadLocationException e) {
             }
-            if (PASS_TO_DELEGATE) {
+            if (passToDelegate) {
                 super.write(buf, off, len);
             }
             AWTThreadTools.onReady(()

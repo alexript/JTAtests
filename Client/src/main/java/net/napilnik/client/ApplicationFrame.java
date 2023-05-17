@@ -65,10 +65,7 @@ public class ApplicationFrame extends AbstractApplicationFrame {
 
     @Override
     protected void onWindowShow() {
-        prepareTasks();
-    }
 
-    private void prepareTasks() {
         List<ClientTask> tasks = ClientTask.getTasks();
         for (ClientTask task : tasks) {
             JToggleButton btn = new JToggleButton();

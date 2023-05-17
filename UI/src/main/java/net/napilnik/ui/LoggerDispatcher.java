@@ -117,7 +117,7 @@ public class LoggerDispatcher {
         logPanel.add(logScrollPane, BorderLayout.CENTER);
 
         Document document = logTextPane.getDocument();
-        DocumentPrintStream outPrintStream = new DocumentPrintStream(logScrollPane.getVerticalScrollBar(), document, System.out);
+        DocumentPrintStream outPrintStream = new DocumentPrintStream(logScrollPane.getVerticalScrollBar(), document, System.out, false);
         scopedWriters.put(nameSpace, new PrintWriter(outPrintStream));
         return logPanel;
     }

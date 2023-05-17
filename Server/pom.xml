@@ -32,14 +32,15 @@
             <version>30.1-jre</version>
             <type>jar</type>
         </dependency>
+
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.26</version>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-broker</artifactId>
+            <version>5.15.9</version>
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-all</artifactId>
+            <artifactId>activemq-kahadb-store</artifactId>
             <version>5.15.9</version>
         </dependency>
         <dependency>
@@ -51,6 +52,11 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>UI</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.7.28</version>
         </dependency>
         <dependency>
             <groupId>javax</groupId>
