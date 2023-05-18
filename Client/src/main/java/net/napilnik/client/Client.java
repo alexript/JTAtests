@@ -23,7 +23,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import java.io.File;
 import java.util.Date;
-import static net.napilnik.entitymodel.AbstractController.JNDI_TRANSACTION_MANAGER;
+import static net.napilnik.entitymodel.transactions.TheTransaction.JNDI_TRANSACTION_MANAGER;
 import net.napilnik.ui.LookAndFeel;
 
 /**
@@ -49,13 +49,10 @@ public class Client implements AutoCloseable {
         conf.setResourceConfigurationFilename("resources.properties");
         return TransactionManagerServices.getTransactionManager();
     }
-    
 
     public Client() {
         tm = connect();
         emf = Persistence.createEntityManagerFactory("model");
-//        AbstractSession session = JpaHelper.getEntityManagerFactory(emf).getDatabaseSession();
-//        session.setExternalTransactionController(new JTA11TransactionController());
     }
 
     public final BitronixTransactionManager getTM() {

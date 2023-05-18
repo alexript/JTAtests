@@ -23,13 +23,12 @@ import javax.persistence.EntityManager;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
-import static net.napilnik.entitymodel.AbstractController.JNDI_TRANSACTION_MANAGER;
 
 /**
  *
  * @author malyshev
  */
-public class TheUserTransaction implements TheTransaction {
+class TheUserTransaction implements TheTransaction {
 
     private UserTransaction ut;
     private final EntityManager em;

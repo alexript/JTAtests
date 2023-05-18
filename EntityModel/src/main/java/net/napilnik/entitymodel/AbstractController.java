@@ -28,9 +28,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.spi.PersistenceUnitTransactionType;
-import static javax.persistence.spi.PersistenceUnitTransactionType.JTA;
-import net.napilnik.entitymodel.transactions.TheEntityTransaction;
-import net.napilnik.entitymodel.transactions.TheUserTransaction;
 import org.eclipse.persistence.jpa.JpaHelper;
 import net.napilnik.entitymodel.transactions.TheTransaction;
 
@@ -43,7 +40,6 @@ import net.napilnik.entitymodel.transactions.TheTransaction;
  */
 public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseable {
 
-    public static final String JNDI_TRANSACTION_MANAGER = "java:appserver/TransactionManager";
     /**
      * Working EntityManager instance.
      */
@@ -102,13 +98,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
     }
 
     private TheTransaction createTx() {
-        TheTransaction transaction;
-        if (transactionType == JTA) {
-            transaction = new TheUserTransaction(em);
-        } else {
-            transaction = new TheEntityTransaction(em);
-        }
-        return transaction;
+        return TheTransaction.create(transactionType, em);
     }
 
     /**

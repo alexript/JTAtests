@@ -15,12 +15,31 @@
  */
 package net.napilnik.entitymodel.transactions;
 
+import javax.persistence.EntityManager;
+import javax.persistence.spi.PersistenceUnitTransactionType;
+import static javax.persistence.spi.PersistenceUnitTransactionType.JTA;
+
 /**
  *
  * @author malyshev
  * @param <T>
  */
 public interface TheTransaction<T> {
+
+    // usually "java:comp/UserTransaction", but eclipselink expect "java:appserver/TransactionManager" for glassfish target-server
+    public static final String JNDI_TRANSACTION_MANAGER = "java:appserver/TransactionManager";
+
+    static TheTransaction create(PersistenceUnitTransactionType transactionType, EntityManager em) {
+
+        TheTransaction transaction;
+        if (transactionType == JTA) {
+            transaction = new TheUserTransaction(em);
+        } else {
+            transaction = new TheEntityTransaction(em);
+        }
+        return transaction;
+
+    }
 
     void commit() throws Exception;
 

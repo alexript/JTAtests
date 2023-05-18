@@ -22,7 +22,7 @@ import javax.persistence.EntityTransaction;
  *
  * @author malyshev
  */
-public class TheEntityTransaction implements TheTransaction<EntityManager> {
+class TheEntityTransaction implements TheTransaction<EntityManager> {
 
     private final EntityManager em;
     private EntityTransaction transaction;
