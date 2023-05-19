@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.naming.Name;
 import javax.naming.NamingException;
-import javax.naming.OperationNotSupportedException;
 
 /**
  *
@@ -29,7 +28,7 @@ import javax.naming.OperationNotSupportedException;
  */
 public class ClientContext extends BitronixContext {
 
-    private static Map<String, Object> binds = new HashMap<>();
+    private static final Map<String, Object> BINDS = new HashMap<>();
 
     public ClientContext() {
         super();
@@ -37,8 +36,8 @@ public class ClientContext extends BitronixContext {
 
     @Override
     public Object lookup(String s) throws NamingException {
-        if (binds.containsKey(s)) {
-            return binds.get(s);
+        if (BINDS.containsKey(s)) {
+            return BINDS.get(s);
         }
         Object o = super.lookup(s);
         if (o instanceof PoolingConnectionFactory pcf) {
@@ -54,6 +53,6 @@ public class ClientContext extends BitronixContext {
 
     @Override
     public void bind(String s, Object o) throws NamingException {
-        binds.put(s, o);
+        BINDS.put(s, o);
     }
 }

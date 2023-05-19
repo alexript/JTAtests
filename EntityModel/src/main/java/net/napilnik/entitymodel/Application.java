@@ -46,6 +46,8 @@ import org.eclipse.persistence.annotations.CascadeOnDelete;
 @NamedQuery(name = "GetStruct", query = "SELECT a.structure FROM Application a WHERE a.mnemo = :mnemo")
 public class Application implements Serializable {
 
+    private static final long serialVersionUID = -424687263026392233L;
+
     /**
      * PrimaryKey.
      */

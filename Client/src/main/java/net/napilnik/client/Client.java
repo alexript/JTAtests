@@ -50,7 +50,6 @@ public class Client implements AutoCloseable {
         conf.setLogPart1Filename(new File(logsFolder, "part1.btm").getAbsolutePath());
         conf.setLogPart2Filename(new File(logsFolder, "part2.btm").getAbsolutePath());
         conf.setJndiUserTransactionName(JNDI_TRANSACTION_MANAGER);
-//        conf.setJndiUserTransactionName("java:comp/UserTransaction");
         conf.setResourceConfigurationFilename("resources.properties");
         return TransactionManagerServices.getTransactionManager();
     }

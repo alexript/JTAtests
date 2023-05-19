@@ -15,10 +15,8 @@
  */
 package net.napilnik.server.servers;
 
-import java.net.URL;
 import net.napilnik.server.IServer;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
  *

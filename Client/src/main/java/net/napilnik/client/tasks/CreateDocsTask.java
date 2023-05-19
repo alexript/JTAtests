@@ -45,7 +45,7 @@ public class CreateDocsTask implements ClientTask {
                 for (int i = 0; i < 10; i++) {
                     dc.create(tx, new Document(app, "tenbyten", "tbt-%d".formatted(new Date().getTime())));
                 }
-               // new javax.naming.InitialContext().lookup("java:comp/UserTransaction");
+
                 tx.commit();
                 ac.update(app);
             } catch (Exception ex) {
