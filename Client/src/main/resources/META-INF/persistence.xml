@@ -33,6 +33,14 @@
             <property name="eclipselink.cache.size.default" value="1000000"/>
             <property name="eclipselink.cache.shared.default" value="true"/>
 
+            <property name="eclipselink.cache.coordination.protocol" value="jms" />
+            <property name="eclipselink.cache.coordination.jms.factory" value="activemq" />
+            <property name="eclipselink.cache.coordination.jms.host" value="tcp://localhost:61616" />
+            <property name="eclipselink.cache.coordination.jndi.user" value="admin" />
+            <property name="eclipselink.cache.coordination.jndi.password" value="admin" />
+            <property name="eclipselink.cache.coordination.jms.topic" value="jms/JPACCTopic" />
+            <property name="eclipselink.cache.coordination.channel" value="JPACCChannel" />
+
 
         </properties>
     </persistence-unit>

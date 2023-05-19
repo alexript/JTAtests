@@ -23,8 +23,13 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import java.io.File;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import static net.napilnik.entitymodel.transactions.TheTransaction.JNDI_TRANSACTION_MANAGER;
 import net.napilnik.ui.LookAndFeel;
+import org.apache.activemq.command.ActiveMQTopic;
 
 /**
  *
@@ -52,6 +57,12 @@ public class Client implements AutoCloseable {
 
     public Client() {
         tm = connect();
+        try {
+            InitialContext context = new InitialContext();
+            context.bind("jms/JPACCTopic", new ActiveMQTopic("JPACCTopic"));
+        } catch (NamingException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
         emf = Persistence.createEntityManagerFactory("model");
     }
 
