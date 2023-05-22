@@ -34,7 +34,10 @@ public class JTAServer implements IServer {
 
     @Override
     public void stop() throws Exception {
-        transactionManager.shutdown();
+        if (transactionManager != null) {
+            transactionManager.shutdown();
+            transactionManager = null;
+        }
     }
 
 }
