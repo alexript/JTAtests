@@ -15,11 +15,30 @@
  */
 package net.napilnik.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextPane;
+import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
@@ -27,31 +46,64 @@ import javax.swing.text.Document;
  *
  * @author malyshev
  */
-public abstract class AbstractApplicationFrame extends javax.swing.JFrame {
+public abstract class AbstractApplicationFrame extends JFrame {
 
     private static final long serialVersionUID = -8254174283488904073L;
     private final AppProperties props;
 
-    private javax.swing.JPanel defaultLogPanel;
-    private javax.swing.JLabel executionLabel;
-    private javax.swing.JButton exitButton;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
+    private JPanel defaultLogPanel;
+    private JLabel executionLabel;
+    private JButton exitButton;
+    private JPanel jPanel1;
+    private JPanel jPanel2;
 
-    private javax.swing.JToolBar.Separator jSeparator2;
-    private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JToolBar jToolBar2;
-    private javax.swing.JScrollPane logScrollPane;
-    private javax.swing.JTextPane logTextPane;
-    private javax.swing.JToolBar logToolBar;
-    private javax.swing.JTabbedPane logsTabbedPane;
-    private javax.swing.JButton resetLogButton;
-    private javax.swing.JToolBar tasksToolBar;
+    private JToolBar.Separator jSeparator2;
+    private JSplitPane jSplitPane1;
+    private JToolBar jToolBar2;
+    private JScrollPane logScrollPane;
+    private JTextPane logTextPane;
+    private JToolBar logToolBar;
+    private JTabbedPane logsTabbedPane;
+    private JButton resetLogButton;
+    private JToolBar tasksToolBar;
+
+    private final ActionListener cleanListener;
+    private final ActionListener resetListener;
+    private LoggerDispatcher logDispatcher;
 
     public AbstractApplicationFrame(String propsFile) {
         super();
         props = new AppProperties(propsFile);
+        cleanListener = (ActionEvent evt) -> {
+            AbstractApplicationFrame.this.cleanMainLog();
+        };
+        resetListener = (ActionEvent evt) -> {
+            LoggerDispatcher d = AbstractApplicationFrame.this.logDispatcher;
+            if (d != null) {
+                d.resetPanels();
+            }
+        };
+
         initComponents();
+    }
+
+    protected javax.swing.JTabbedPane getLogTabs() {
+        return logsTabbedPane;
+    }
+
+    protected void cleanMainLog() {
+        if (logTextPane != null) {
+            Document document = logTextPane.getDocument();
+            if (document != null) {
+                try {
+                    document.remove(0, document.getLength());
+
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(AbstractApplicationFrame.class
+                            .getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
     }
 
     private void prepare() {
@@ -62,7 +114,7 @@ public abstract class AbstractApplicationFrame extends javax.swing.JFrame {
 
         UIJulLogger.setOut(outPrintStream);
 
-        LoggerDispatcher logDispatcher = new LoggerDispatcher(logsTabbedPane, outPrintStream);
+        logDispatcher = new LoggerDispatcher(this, outPrintStream);
         UILogger.setDispatcher(logDispatcher);
 
         DocumentPrintStream errPrintStream = new DocumentPrintStream(logScrollPane.getVerticalScrollBar(), document, System.err);
@@ -92,105 +144,112 @@ public abstract class AbstractApplicationFrame extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     private void initComponents() {
 
-        jSplitPane1 = new javax.swing.JSplitPane();
-        jPanel2 = new javax.swing.JPanel();
-        logsTabbedPane = new javax.swing.JTabbedPane();
-        defaultLogPanel = new javax.swing.JPanel();
-        logScrollPane = new javax.swing.JScrollPane();
-        logTextPane = new javax.swing.JTextPane();
-        logToolBar = new javax.swing.JToolBar();
-        resetLogButton = new javax.swing.JButton();
-        jToolBar2 = new javax.swing.JToolBar();
-        executionLabel = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        tasksToolBar = new javax.swing.JToolBar();
+        jSplitPane1 = new JSplitPane();
+        jPanel2 = new JPanel();
+        logsTabbedPane = new JTabbedPane();
+        defaultLogPanel = new JPanel();
+        logScrollPane = new JScrollPane();
+        logTextPane = new JTextPane();
+        logToolBar = new JToolBar();
+        resetLogButton = new JButton();
+        jToolBar2 = new JToolBar();
+        executionLabel = new JLabel();
+        jPanel1 = new JPanel();
+        tasksToolBar = new JToolBar();
 
-        exitButton = new javax.swing.JButton();
-        jSeparator2 = new javax.swing.JToolBar.Separator();
+        exitButton = new JButton();
+        jSeparator2 = new JToolBar.Separator();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-        addComponentListener(new java.awt.event.ComponentAdapter() {
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        addComponentListener(new ComponentAdapter() {
             @Override
-            public void componentShown(java.awt.event.ComponentEvent evt) {
-                formComponentShown(evt);
+            public void componentShown(ComponentEvent evt) {
+                prepare();
             }
         });
-        addWindowListener(new java.awt.event.WindowAdapter() {
+        addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(java.awt.event.WindowEvent evt) {
+            public void windowClosing(WindowEvent evt) {
                 formWindowClosing(evt);
             }
         });
 
         jSplitPane1.setDividerLocation(500);
-        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane1.setOrientation(JSplitPane.VERTICAL_SPLIT);
 
-        jPanel2.setLayout(new java.awt.BorderLayout());
+        jPanel2.setLayout(new BorderLayout());
 
-        defaultLogPanel.setLayout(new java.awt.BorderLayout());
+        defaultLogPanel.setLayout(new BorderLayout());
 
         logTextPane.setEditable(false);
         logScrollPane.setViewportView(logTextPane);
 
-        defaultLogPanel.add(logScrollPane, java.awt.BorderLayout.CENTER);
+        defaultLogPanel.add(logScrollPane, BorderLayout.CENTER);
 
-        logToolBar.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        logToolBar.setOrientation(SwingConstants.VERTICAL);
         logToolBar.setRollover(true);
 
         resetLogButton.setText("<html>&#8855;");
         resetLogButton.setToolTipText("Clear log");
         resetLogButton.setFocusable(false);
-        resetLogButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        resetLogButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        resetLogButton.addActionListener((java.awt.event.ActionEvent evt) -> {
-            resetLogButtonActionPerformed(evt);
-        });
+        resetLogButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        resetLogButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        resetLogButton.addActionListener(cleanListener);
         logToolBar.add(resetLogButton);
 
-        defaultLogPanel.add(logToolBar, java.awt.BorderLayout.WEST);
+        JButton removeAllLogButton = new JButton();
+        removeAllLogButton.setText("<html>&#8416;");
+        removeAllLogButton.setToolTipText("Clear all log");
+        removeAllLogButton.setFocusable(false);
+        removeAllLogButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        removeAllLogButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        removeAllLogButton.addActionListener(resetListener);
+        logToolBar.add(removeAllLogButton);
+
+        defaultLogPanel.add(logToolBar, BorderLayout.WEST);
 
         logsTabbedPane.addTab("Logs", defaultLogPanel);
 
-        jPanel2.add(logsTabbedPane, java.awt.BorderLayout.CENTER);
+        jPanel2.add(logsTabbedPane, BorderLayout.CENTER);
 
         jToolBar2.setRollover(true);
 
-        executionLabel.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        executionLabel.setFont(new Font("Segoe UI", 0, 18)); // NOI18N
         executionLabel.setText("●");
         executionLabel.setAlignmentY(0.0F);
         jToolBar2.add(executionLabel);
 
-        jPanel2.add(jToolBar2, java.awt.BorderLayout.SOUTH);
+        jPanel2.add(jToolBar2, BorderLayout.SOUTH);
 
         jSplitPane1.setRightComponent(jPanel2);
 
-        jPanel1.setLayout(new java.awt.BorderLayout());
+        jPanel1.setLayout(new BorderLayout());
 
         tasksToolBar.setRollover(true);
 
         exitButton.setText("Exit");
         exitButton.setFocusable(false);
-        exitButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        exitButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        exitButton.addActionListener((java.awt.event.ActionEvent evt) -> {
-            exitButtonActionPerformed(evt);
+        exitButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        exitButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        exitButton.addActionListener((ActionEvent evt) -> {
+            formWindowClosing(null);
         });
         tasksToolBar.add(exitButton);
         tasksToolBar.add(jSeparator2);
 
-        jPanel1.add(tasksToolBar, java.awt.BorderLayout.PAGE_START);
+        jPanel1.add(tasksToolBar, BorderLayout.PAGE_START);
 
         jSplitPane1.setLeftComponent(jPanel1);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 689, Short.MAX_VALUE)
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(jSplitPane1, GroupLayout.DEFAULT_SIZE, 689, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(jSplitPane1, GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
         );
 
         onInitComponents();
@@ -224,7 +283,7 @@ public abstract class AbstractApplicationFrame extends javax.swing.JFrame {
         return 80 * h / 100;
     }
 
-    private void formWindowClosing(java.awt.event.WindowEvent evt) {
+    private void formWindowClosing(WindowEvent evt) {
         if (isBusy()) {
             return;
         }
@@ -236,23 +295,6 @@ public abstract class AbstractApplicationFrame extends javax.swing.JFrame {
     }
 
     protected abstract void onWindowClosing();
-
-    private void formComponentShown(java.awt.event.ComponentEvent evt) {
-        prepare();
-    }
-
-    private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        formWindowClosing(null);
-    }
-
-    private void resetLogButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        Document document = logTextPane.getDocument();
-        try {
-            document.remove(0, document.getLength());
-        } catch (BadLocationException ex) {
-            Logger.getLogger(AbstractApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
 
     void beforeExit() {
 

@@ -15,24 +15,14 @@
  */
 package net.napilnik.ui;
 
-import java.awt.BorderLayout;
+import java.awt.Component;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextPane;
-import javax.swing.JToolBar;
-import javax.swing.SwingConstants;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.eclipse.persistence.logging.SessionLog;
 
 /**
@@ -45,9 +35,11 @@ public class LoggerDispatcher {
     private final JTabbedPane tabs;
     private final PrintWriter defaultPrintWriter;
     private final Map<String, PrintWriter> scopedWriters;
+    private final AbstractApplicationFrame frame;
 
-    public LoggerDispatcher(JTabbedPane tabs, PrintStream defaultStream) {
-        this.tabs = tabs;
+    public LoggerDispatcher(AbstractApplicationFrame frame, PrintStream defaultStream) {
+        this.frame = frame;
+        this.tabs = frame.getLogTabs();
         this.defaultPrintWriter = new PrintWriter(defaultStream);
         scopedWriters = new HashMap<>();
     }
@@ -79,46 +71,29 @@ public class LoggerDispatcher {
         if (isPanelExist(nameSpace)) {
             return;
         }
-        final JPanel newPanel = createLogPanel(nameSpace);
-        tabs.addTab(nameSpace, newPanel);
+        final LogPanel logPanel = new LogPanel(this, nameSpace, scopedWriters);
+        tabs.addTab(nameSpace, logPanel);
     }
 
-    private JPanel createLogPanel(String nameSpace) {
-        JPanel logPanel = new JPanel();
-        final JTextPane logTextPane = new JTextPane();
-        JScrollPane logScrollPane = new JScrollPane();
-        JToolBar logToolBar = new JToolBar();
-        JButton resetLogButton = new JButton();
-
-        logPanel.setLayout(new BorderLayout());
-        logTextPane.setEditable(false);
-        logScrollPane.setViewportView(logTextPane);
-
-        logToolBar.setOrientation(SwingConstants.VERTICAL);
-        logToolBar.setRollover(true);
-
-        resetLogButton.setText("<html>&#8855;");
-        resetLogButton.setToolTipText("Clear <%s> log".formatted(nameSpace));
-        resetLogButton.setFocusable(false);
-        resetLogButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        resetLogButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        resetLogButton.addActionListener((java.awt.event.ActionEvent evt) -> {
-            Document document = logTextPane.getDocument();
-            try {
-                document.remove(0, document.getLength());
-            } catch (BadLocationException ex) {
-                Logger.getLogger(LoggerDispatcher.class.getName()).log(Level.SEVERE, null, ex);
+    protected void resetPanels() {
+        for (Map.Entry<String, PrintWriter> entry : scopedWriters.entrySet()) {
+            try (PrintWriter writer = entry.getValue()) {
+                writer.flush();
             }
-        });
-        logToolBar.add(resetLogButton);
-
-        logPanel.add(logToolBar, BorderLayout.WEST);
-
-        logPanel.add(logScrollPane, BorderLayout.CENTER);
-
-        Document document = logTextPane.getDocument();
-        DocumentPrintStream outPrintStream = new DocumentPrintStream(logScrollPane.getVerticalScrollBar(), document, System.out, false);
-        scopedWriters.put(nameSpace, new PrintWriter(outPrintStream));
-        return logPanel;
+        }
+        scopedWriters.clear();
+        Component[] components = tabs.getComponents();
+        for (Component c : components) {
+            if (c instanceof LogPanel logPanel) {
+                logPanel.clean();
+            }
+        }
+        int total = tabs.getComponentCount();
+        if (total > 1) {
+            for (int i = total - 1; i > 0; i--) {
+                tabs.remove(i);
+            }
+        }
+        frame.cleanMainLog();
     }
 }
