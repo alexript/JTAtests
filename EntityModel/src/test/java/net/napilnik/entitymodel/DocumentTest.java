@@ -16,7 +16,6 @@
 package net.napilnik.entitymodel;
 
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import java.util.Collection;
 import java.util.Date;
@@ -305,7 +304,7 @@ public class DocumentTest {
         printTestFooter("testGetByMnemo", startNow);
     }
 
-    
+
     /**
      * Check select query by code.
      */
@@ -326,7 +325,7 @@ public class DocumentTest {
         }
         printTestFooter("testGetByCode", startNow);
     }
-    
+
     /**
      * Check select query by mnemo AND code.
      */
@@ -342,7 +341,7 @@ public class DocumentTest {
             }
             List<Document> result = c.getByCode(app, MNEMO_3, "doc-MC3-0");
             assertEquals(1, result.size());
-            
+
             result = c.getByCode(app, MNEMO_2, "doc-MC3-0");
             assertEquals(0, result.size());
         } catch (Exception ex) {

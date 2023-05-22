@@ -44,7 +44,7 @@ public class ApplicationFrame extends AbstractApplicationFrame {
     @Override
     protected void onWindowShow() {
         try {
-            databaseServer = new DatabaseServer();
+            databaseServer = new DatabaseServer(this);
             databaseServer.start();
             jmsServer = new JMSServer();
             jmsServer.start();

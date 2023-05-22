@@ -17,9 +17,12 @@ package net.napilnik.server.servers;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.napilnik.server.IServer;
+import net.napilnik.ui.AbstractApplicationFrame;
+import net.napilnik.ui.LoggerDispatcher;
 import org.hsqldb.persist.HsqlProperties;
 import org.hsqldb.server.Server;
 import org.hsqldb.server.ServerAcl;
@@ -40,13 +43,14 @@ public class DatabaseServer implements IServer {
     }
     private Server server;
 
-    public DatabaseServer() {
+    public DatabaseServer(AbstractApplicationFrame mainFrame) {
 
         String[] args = new String[]{
             "--port", "9001",
             "--database.0", getDbPath("masterServer"),
             "--dbname.0", "masterServer",
-            "--remote_open", "true"
+            "--remote_open", "true",
+            "--silent", "false"
         };
 
         HsqlProperties argProps = HsqlProperties.argArrayToProps(args, "server");
@@ -65,12 +69,18 @@ public class DatabaseServer implements IServer {
         server = new Server();
 
         try {
+            LoggerDispatcher logsDispatcher = mainFrame.getLogsDispatcher();
+            logsDispatcher.registerLogCategory(LOG_CATEGORY);
+            PrintWriter databaseLogWriter = logsDispatcher.route(LOG_CATEGORY);
+            server.setLogWriter(databaseLogWriter);
+            server.setErrWriter(databaseLogWriter);
             server.setProperties(argProps);
         } catch (IOException | ServerAcl.AclFormatException e) {
             Logger.getLogger(DatabaseServer.class.getName()).log(Level.SEVERE, "Failed to set properties", e);
         }
 
     }
+    private static final String LOG_CATEGORY = "Database";
 
     @Override
     public void start() throws Exception {

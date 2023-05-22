@@ -19,6 +19,7 @@ import javax.persistence.EntityManagerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.napilnik.entitymodel.transactions.TheTransaction;
 
 /**
  *
@@ -147,6 +148,15 @@ public class DocumentController extends AbstractController<Document, Long> {
     protected Document querySingle(String queryName, Map<String, Object> parameters) {
         return querySingle(queryName, Document.class, parameters);
     }
-//</editor-fold>
 
+    @Override
+    public void delete(TheTransaction tr, Document document) {
+        super.delete(tr, document);
+        Application application = document.getApplication();
+        if (application != null) {
+            application.removeDocument(document);
+        }
+    }
+
+//</editor-fold>
 }

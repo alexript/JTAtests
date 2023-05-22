@@ -87,6 +87,10 @@ public abstract class AbstractApplicationFrame extends JFrame {
         initComponents();
     }
 
+    public LoggerDispatcher getLogsDispatcher() {
+        return logDispatcher;
+    }
+
     protected javax.swing.JTabbedPane getLogTabs() {
         return logsTabbedPane;
     }

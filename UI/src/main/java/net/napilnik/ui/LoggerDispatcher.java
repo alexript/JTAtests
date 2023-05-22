@@ -18,10 +18,13 @@ package net.napilnik.ui;
 import java.awt.Component;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.JTabbedPane;
 import org.eclipse.persistence.logging.SessionLog;
 
@@ -31,7 +34,9 @@ import org.eclipse.persistence.logging.SessionLog;
  */
 public class LoggerDispatcher {
 
-    private static final List<String> loggerCatagories = Arrays.asList(SessionLog.loggerCatagories);
+    private static final List<String> JPA_LOG_CATEGORIES = Arrays.asList(SessionLog.loggerCatagories);
+
+    private static final List<String> loggerCatagories = new ArrayList(JPA_LOG_CATEGORIES);
     private final JTabbedPane tabs;
     private final PrintWriter defaultPrintWriter;
     private final Map<String, PrintWriter> scopedWriters;
@@ -50,6 +55,12 @@ public class LoggerDispatcher {
         }
         addPanel(nameSpace);
         return scopedWriters.get(nameSpace);
+    }
+
+    public void registerLogCategory(String title) {
+        if (!loggerCatagories.contains(title)) {
+            loggerCatagories.add(title);
+        }
     }
 
     public boolean isDefaultPane(String nameSpace) {
@@ -76,12 +87,20 @@ public class LoggerDispatcher {
     }
 
     protected void resetPanels() {
+        Set<String> namesToRemove = new HashSet<>();
         for (Map.Entry<String, PrintWriter> entry : scopedWriters.entrySet()) {
-            try (PrintWriter writer = entry.getValue()) {
-                writer.flush();
+            if (JPA_LOG_CATEGORIES.contains(entry.getKey())) {
+                try (PrintWriter writer = entry.getValue()) {
+                    writer.flush();
+                }
+                namesToRemove.add(entry.getKey());
+
             }
         }
-        scopedWriters.clear();
+        for (String name : namesToRemove) {
+            scopedWriters.remove(name);
+        }
+
         Component[] components = tabs.getComponents();
         for (Component c : components) {
             if (c instanceof LogPanel logPanel) {
@@ -91,7 +110,10 @@ public class LoggerDispatcher {
         int total = tabs.getComponentCount();
         if (total > 1) {
             for (int i = total - 1; i > 0; i--) {
-                tabs.remove(i);
+                String title = tabs.getTitleAt(i);
+                if (JPA_LOG_CATEGORIES.contains(title)) {
+                    tabs.remove(i);
+                }
             }
         }
         frame.cleanMainLog();

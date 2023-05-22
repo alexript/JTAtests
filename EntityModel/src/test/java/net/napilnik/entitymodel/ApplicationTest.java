@@ -16,7 +16,6 @@
 package net.napilnik.entitymodel;
 
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import java.util.Collection;
 import java.util.Date;
@@ -32,6 +31,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import net.napilnik.entitymodel.transactions.TheTransaction;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  *
@@ -143,5 +143,54 @@ public class ApplicationTest {
         printTestFooter("testGetStructure", startNow);
     }
 
- 
+    @Test
+    public void deleteAppDocument() {
+        Date startNow = printTestHeader("deleteAppDocument");
+        final String appMnemo = "delApp";
+
+        // create application
+        Application app = new Application(appMnemo);
+        try (ApplicationController ac = new ApplicationController(emf)) {
+            ac.create(app);
+        }
+
+        Document docToRemove = null;
+        // creapte application's documents
+        try (ApplicationController ac = new ApplicationController(emf); DocumentController dc = new DocumentController(emf)) {
+
+            TheTransaction tx = dc.createTransaction();
+            try {
+                dc.create(tx, new Document(app, "t", "1"));
+                docToRemove = new Document(app, "t", "2");
+                dc.create(tx, docToRemove);
+                dc.create(tx, new Document(app, "t", "3"));
+                tx.commit();
+                ac.update(app);
+            } catch (Exception ex) {
+                tx.rollback();
+                fail(ex);
+            }
+        }
+
+        assertNotNull(docToRemove);
+
+        try (ApplicationController ac = new ApplicationController(emf)) {
+
+            try {
+                app.removeDocument(docToRemove);
+                ac.update(app);
+            } catch (Exception ex) {
+                fail(ex);
+            }
+        }
+
+        // test
+        try (ApplicationController ac = new ApplicationController(emf)) {
+            Application foundApp = ac.find(appMnemo);
+            Collection<Document> documents = foundApp.getDocuments();
+            Assertions.assertEquals(2, documents.size());
+        }
+
+        printTestFooter("deleteAppDocument", startNow);
+    }
 }

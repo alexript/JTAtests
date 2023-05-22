@@ -115,6 +115,13 @@ public class Application implements Serializable {
             document.setApplication(this);
         }
     }
+
+    public void removeDocument(Document document) {
+        if (documents == null) {
+            documents = new HashSet<>();
+        }
+        documents.remove(document);
+    }
 //</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="equals, hashCode, toString">
@@ -139,4 +146,5 @@ public class Application implements Serializable {
         return "net.napilnik.entitymodel.Application[ mnemo=" + mnemo + " ]";
     }
 //</editor-fold>
+
 }

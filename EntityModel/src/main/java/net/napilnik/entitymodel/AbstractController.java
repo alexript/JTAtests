@@ -168,7 +168,8 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      * @param tr started transaction
      * @param entity @Entity object
      */
-    public final void delete(TheTransaction tr, ENTITY entity) {
+    public void delete(TheTransaction tr, ENTITY entity) {
+        entity = em.merge(entity);
         em.remove(entity);
     }
 

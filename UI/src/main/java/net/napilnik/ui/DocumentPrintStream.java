@@ -32,6 +32,7 @@ class DocumentPrintStream extends PrintStream {
     private static final Object sync = new Object();
     private final JScrollBar vScroll;
     private boolean passToDelegate;
+    private final OutputStream outputStream;
 
     public DocumentPrintStream(JScrollBar vScroll, Document document, OutputStream delegateStream) {
         this(vScroll, document, delegateStream, true);
@@ -39,9 +40,18 @@ class DocumentPrintStream extends PrintStream {
 
     public DocumentPrintStream(JScrollBar vScroll, Document document, OutputStream delegateStream, boolean passToDelegate) {
         super(delegateStream);
+        this.outputStream = delegateStream;
         this.document = document;
         this.vScroll = vScroll;
         this.passToDelegate = passToDelegate;
+    }
+
+    @Override
+    public void close() {
+        if (outputStream == System.out || outputStream == System.err) {
+            return;
+        }
+        super.close();
     }
 
     public void setConsoleOutput(boolean enable) {

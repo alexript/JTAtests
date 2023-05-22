@@ -32,6 +32,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import java.util.Collection;
 import java.util.HashSet;
+import javax.persistence.PreRemove;
 
 /**
  * Some kind of Document. menmo -- mnemonics of document type. code -- unique
@@ -207,7 +208,7 @@ public class Document implements Serializable {
 
     public final void setApplication(Application application) {
         this.application = application;
-        if (!application.getDocuments().contains(this)) {
+        if (application != null && !application.getDocuments().contains(this)) {
             application.addDocument(this);
         }
     }
