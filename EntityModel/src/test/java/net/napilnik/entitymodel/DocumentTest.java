@@ -75,7 +75,7 @@ public class DocumentTest {
      */
     @Test
     public void testCodeFormat() {
-        printTestHeader("testCodeFormat");
+        printTestHeader("DocumentTest::testCodeFormat");
         assertDoesNotThrow(() -> new Document(app, MNEMO_1, "1"));
         assertDoesNotThrow(() -> new Document(app, MNEMO_1, "12"));
         assertDoesNotThrow(() -> new Document(app, MNEMO_1, "12-3"));
@@ -92,7 +92,7 @@ public class DocumentTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> new Document(app, MNEMO_1, ""));
-        printTestFooter("testCodeFormat");
+        printTestFooter("DocumentTest::testCodeFormat");
     }
 
     /**
@@ -100,7 +100,7 @@ public class DocumentTest {
      */
     @Test
     public void testCreate() {
-        Date startNow = printTestHeader("testCreate");
+        Date startNow = printTestHeader("DocumentTest::testCreate");
         Document doc = new Document(app, MNEMO_1, "testCreate");
         try (DocumentController c = new DocumentController(emf)) {
             boolean result = c.create(doc);
@@ -108,7 +108,7 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
-        printTestFooter("testCreate", startNow);
+        printTestFooter("DocumentTest::testCreate", startNow);
     }
 
     /**
@@ -116,7 +116,7 @@ public class DocumentTest {
      */
     @Test
     public void testDelete() {
-        Date startNow = printTestHeader("testDelete");
+        Date startNow = printTestHeader("DocumentTest::testDelete");
         Document doc = new Document(app, MNEMO_1, "testDelete");
         try (DocumentController c = new DocumentController(emf)) {
             c.create(doc);
@@ -125,7 +125,7 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
-        printTestFooter("testDelete", startNow);
+        printTestFooter("DocumentTest::testDelete", startNow);
     }
 
     /**
@@ -133,7 +133,7 @@ public class DocumentTest {
      */
     @Test
     public void testUpdate() {
-        Date startNow = printTestHeader("testUpdate");
+        Date startNow = printTestHeader("DocumentTest::testUpdate");
         Document doc = new Document(app, MNEMO_1, "testUpdate");
         try (DocumentController c = new DocumentController(emf)) {
             c.create(doc);
@@ -143,7 +143,7 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
-        printTestFooter("testUpdate", startNow);
+        printTestFooter("DocumentTest::testUpdate", startNow);
     }
 
     /**
@@ -151,7 +151,7 @@ public class DocumentTest {
      */
     @Test
     public void testFind() {
-        Date startNow = printTestHeader("testFind");
+        Date startNow = printTestHeader("DocumentTest::testFind");
         Document doc = new Document(app, MNEMO_1, "testFind");
         try (DocumentController c = new DocumentController(emf)) {
             c.create(doc);
@@ -162,7 +162,7 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
-        printTestFooter("testFind", startNow);
+        printTestFooter("DocumentTest::testFind", startNow);
     }
 
     /**
@@ -170,7 +170,7 @@ public class DocumentTest {
      */
     @Test
     public void testCreateChilds() {
-        Date startNow = printTestHeader("testCreateChilds");
+        Date startNow = printTestHeader("DocumentTest::testCreateChilds");
         Document parentDoc = new Document(app, MNEMO_1, "parent");
         Document childDoc = new Document(app, MNEMO_1, "child");
 
@@ -183,7 +183,7 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
-        printTestFooter("testCreateChilds", startNow);
+        printTestFooter("DocumentTest::testCreateChilds", startNow);
     }
 
     /**
@@ -192,23 +192,29 @@ public class DocumentTest {
      */
     @Test
     public void testFindChilds() {
-        Date startNow = printTestHeader("testFindChilds");
+        Date startNow = printTestHeader("DocumentTest::testFindChilds");
         Document parentDoc = new Document(app, MNEMO_1, "parent");
         Document childDoc = new Document(app, MNEMO_1, "child");
 
         try (DocumentController c = new DocumentController(emf)) {
-            c.create(parentDoc);
-            c.create(childDoc);
-            childDoc.addParentDocument(parentDoc);
-            c.update(childDoc);
-
+            TheTransaction tx = c.createTransaction();
+            try {
+                c.create(tx, parentDoc);
+                c.create(tx, childDoc);
+                childDoc.addParentDocument(parentDoc);
+                c.update(tx, childDoc);
+                tx.commit();
+            } catch (Exception ex) {
+                tx.rollback();
+                fail(ex);
+            }
             Collection<Document> expected = parentDoc.getChildDocuments();
             List<Document> result = c.getChildren(parentDoc);
             assertIterableEquals(expected, result);
         } catch (Exception ex) {
             fail(ex);
         }
-        printTestFooter("testFindChilds", startNow);
+        printTestFooter("DocumentTest::testFindChilds", startNow);
     }
 
     /**
@@ -216,7 +222,7 @@ public class DocumentTest {
      */
     @Test
     public void testFindChildsInNewEM() {
-        Date startNow = printTestHeader("testFindChildsInNewEM");
+        Date startNow = printTestHeader("DocumentTest::testFindChildsInNewEM");
         Document parentDoc = new Document(app, MNEMO_1, "parent");
         Document childDoc = new Document(app, MNEMO_1, "child");
         Collection<Document> expected = null;
@@ -246,7 +252,7 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
-        printTestFooter("testFindChildsInNewEM", startNow);
+        printTestFooter("DocumentTest::testFindChildsInNewEM", startNow);
     }
 
     /**
@@ -255,7 +261,7 @@ public class DocumentTest {
     @Test
     public void testFindChildsWithMnemo() {
         final String uniqueMnemo = "iseuhfsieufh";
-        Date startNow = printTestHeader("testFindChildsWithMnemo");
+        Date startNow = printTestHeader("DocumentTest::testFindChildsWithMnemo");
         Document parentDoc = new Document(app, MNEMO_1, "parent");
         Document[] children = new Document[]{
             new Document(app, MNEMO_1, "child1"),
@@ -265,13 +271,19 @@ public class DocumentTest {
         };
 
         try (DocumentController c = new DocumentController(emf)) {
-            c.create(parentDoc);
-            for (Document child : children) {
-                c.create(child);
-                child.addParentDocument(parentDoc);
-                c.update(child);
+            TheTransaction tx = c.createTransaction();
+            try {
+                c.create(tx, parentDoc);
+                for (Document child : children) {
+                    c.create(tx, child);
+                    child.addParentDocument(parentDoc);
+                    c.update(tx, child);
+                }
+                tx.commit();
+            } catch (Exception ex) {
+                tx.rollback();
+                fail(ex);
             }
-
             List<Document> result = c.getChildren(parentDoc, uniqueMnemo);
             assertTrue(result.size() == 1);
             Document childDoc = result.get(0);
@@ -280,7 +292,7 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
-        printTestFooter("testFindChildsWithMnemo", startNow);
+        printTestFooter("DocumentTest::testFindChildsWithMnemo", startNow);
     }
 
     /**
@@ -288,42 +300,55 @@ public class DocumentTest {
      */
     @Test
     public void testGetByMnemo() {
-        Date startNow = printTestHeader("testGetByMnemo");
+        Date startNow = printTestHeader("DocumentTest::testGetByMnemo");
         int documentsNumber = 10;
         try (DocumentController c = new DocumentController(emf)) {
-            for (int counter = 0; counter < documentsNumber; counter++) {
-                c.create(new Document(app, MNEMO_1 + "-mod", "doc-1-" + counter));
-                c.create(new Document(app, MNEMO_2 + "-mod", "doc-2-" + counter));
-                c.create(new Document(app, MNEMO_3 + "-mod", "doc-3-" + counter));
+            TheTransaction tx = c.createTransaction();
+            try {
+                for (int counter = 0; counter < documentsNumber; counter++) {
+                    c.create(tx, new Document(app, MNEMO_1 + "-mod", "doc-1-" + counter));
+                    c.create(tx, new Document(app, MNEMO_2 + "-mod", "doc-2-" + counter));
+                    c.create(tx, new Document(app, MNEMO_3 + "-mod", "doc-3-" + counter));
+                }
+                tx.commit();
+            } catch (Exception ex) {
+                tx.rollback();
+                fail(ex);
             }
             List<Document> result = c.getByMnemo(app, MNEMO_3 + "-mod");
             assertEquals(documentsNumber, result.size());
         } catch (Exception ex) {
             fail(ex);
         }
-        printTestFooter("testGetByMnemo", startNow);
+        printTestFooter("DocumentTest::testGetByMnemo", startNow);
     }
-
 
     /**
      * Check select query by code.
      */
     @Test
     public void testGetByCode() {
-        Date startNow = printTestHeader("testGetByCode");
+        Date startNow = printTestHeader("DocumentTest::testGetByCode");
         int documentsNumber = 10;
         try (DocumentController c = new DocumentController(emf)) {
-            for (int counter = 0; counter < documentsNumber; counter++) {
-                c.create(new Document(app, MNEMO_1, "doc-C1-" + counter));
-                c.create(new Document(app, MNEMO_2, "doc-C2-" + counter));
-                c.create(new Document(app, MNEMO_3, "doc-C3-" + counter));
+            TheTransaction tx = c.createTransaction();
+            try {
+                for (int counter = 0; counter < documentsNumber; counter++) {
+                    c.create(tx, new Document(app, MNEMO_1, "doc-C1-" + counter));
+                    c.create(tx, new Document(app, MNEMO_2, "doc-C2-" + counter));
+                    c.create(tx, new Document(app, MNEMO_3, "doc-C3-" + counter));
+                }
+                tx.commit();
+            } catch (Exception ex) {
+                tx.rollback();
+                fail(ex);
             }
             List<Document> result = c.getByCode(app, "doc-C3-0");
             assertEquals(1, result.size());
         } catch (Exception ex) {
             fail(ex);
         }
-        printTestFooter("testGetByCode", startNow);
+        printTestFooter("DocumentTest::testGetByCode", startNow);
     }
 
     /**
@@ -331,13 +356,20 @@ public class DocumentTest {
      */
     @Test
     public void testGetByMnemoCode() {
-        Date startNow = printTestHeader("testGetByMnemoCode");
+        Date startNow = printTestHeader("DocumentTest::testGetByMnemoCode");
         int documentsNumber = 10;
         try (DocumentController c = new DocumentController(emf)) {
-            for (int counter = 0; counter < documentsNumber; counter++) {
-                c.create(new Document(app, MNEMO_1, "doc-MC1-" + counter));
-                c.create(new Document(app, MNEMO_2, "doc-MC2-" + counter));
-                c.create(new Document(app, MNEMO_3, "doc-MC3-" + counter));
+            TheTransaction tx = c.createTransaction();
+            try {
+                for (int counter = 0; counter < documentsNumber; counter++) {
+                    c.create(tx, new Document(app, MNEMO_1, "doc-MC1-" + counter));
+                    c.create(tx, new Document(app, MNEMO_2, "doc-MC2-" + counter));
+                    c.create(tx, new Document(app, MNEMO_3, "doc-MC3-" + counter));
+                }
+                tx.commit();
+            } catch (Exception ex) {
+                tx.rollback();
+                fail(ex);
             }
             List<Document> result = c.getByCode(app, MNEMO_3, "doc-MC3-0");
             assertEquals(1, result.size());
@@ -347,7 +379,7 @@ public class DocumentTest {
         } catch (Exception ex) {
             fail(ex);
         }
-        printTestFooter("testGetByMnemoCode", startNow);
+        printTestFooter("DocumentTest::testGetByMnemoCode", startNow);
     }
 
     /**
@@ -355,7 +387,7 @@ public class DocumentTest {
      */
     @Test
     public void testBasicTransaction() {
-        Date startNow = printTestHeader("testBasicTransaction");
+        Date startNow = printTestHeader("DocumentTest::testBasicTransaction");
         int documentsNumber = 10;
         try (DocumentController c = new DocumentController(emf)) {
             TheTransaction tr = c.createTransaction();
@@ -372,12 +404,12 @@ public class DocumentTest {
             fail(ex);
         }
         assertTrue(true); // there is no formal success state.
-        printTestFooter("testBasicTransaction", startNow);
+        printTestFooter("DocumentTest::testBasicTransaction", startNow);
     }
 
     @Test
     public void testCRUDTransaction() {
-        Date startNow = printTestHeader("testCRUDTransaction");
+        Date startNow = printTestHeader("DocumentTest::testCRUDTransaction");
         try (DocumentController c = new DocumentController(emf)) {
             TheTransaction tr = c.createTransaction();
             try {
@@ -401,7 +433,7 @@ public class DocumentTest {
             fail(ex);
         }
         assertTrue(true); // there is no formal success state.
-        printTestFooter("testCRUDTransaction", startNow);
+        printTestFooter("DocumentTest::testCRUDTransaction", startNow);
     }
 
 }

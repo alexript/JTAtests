@@ -64,7 +64,7 @@ public class ApplicationTest {
      */
     @Test
     public void testCreate() {
-        Date startNow = printTestHeader("testCreate");
+        Date startNow = printTestHeader("ApplicationTest::testCreate");
         Application app = new Application("testCreate");
         try (ApplicationController c = new ApplicationController(emf)) {
             boolean result = c.create(app);
@@ -72,7 +72,7 @@ public class ApplicationTest {
         } catch (Exception ex) {
             fail(ex);
         }
-        printTestFooter("testCreate", startNow);
+        printTestFooter("ApplicationTest::testCreate", startNow);
     }
 
     /**
@@ -80,7 +80,7 @@ public class ApplicationTest {
      */
     @Test
     public void testGetDocuments() {
-        Date startNow = printTestHeader("testGetDocuments");
+        Date startNow = printTestHeader("ApplicationTest::testGetDocuments");
         final String appMnemo = "app1";
         Application app = new Application(appMnemo);
         try (ApplicationController ac = new ApplicationController(emf)) {
@@ -111,7 +111,7 @@ public class ApplicationTest {
             Assertions.assertEquals(3, documents.size());
         }
 
-        printTestFooter("testGetDocuments", startNow);
+        printTestFooter("ApplicationTest::testGetDocuments", startNow);
     }
 
     /**
@@ -120,7 +120,7 @@ public class ApplicationTest {
      */
     @Test
     public void testGetStructure() {
-        Date startNow = printTestHeader("testGetStructure");
+        Date startNow = printTestHeader("ApplicationTest::testGetStructure");
         String struct = """
                         {root: 'root'}
                         """;
@@ -140,12 +140,12 @@ public class ApplicationTest {
             String expected = struct.trim();
             assertEquals(expected, result);
         }
-        printTestFooter("testGetStructure", startNow);
+        printTestFooter("ApplicationTest::testGetStructure", startNow);
     }
 
     @Test
     public void deleteAppDocument() {
-        Date startNow = printTestHeader("deleteAppDocument");
+        Date startNow = printTestHeader("ApplicationTest::deleteAppDocument");
         final String appMnemo = "delApp";
 
         // create application
@@ -191,6 +191,6 @@ public class ApplicationTest {
             Assertions.assertEquals(2, documents.size());
         }
 
-        printTestFooter("deleteAppDocument", startNow);
+        printTestFooter("ApplicationTest::deleteAppDocument", startNow);
     }
 }
