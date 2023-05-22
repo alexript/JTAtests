@@ -1,3 +1,4 @@
 databases
 btm*.log
 activemq-data
+jtaserver.properties
