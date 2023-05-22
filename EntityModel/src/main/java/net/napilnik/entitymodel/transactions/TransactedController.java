@@ -15,33 +15,16 @@
  */
 package net.napilnik.entitymodel.transactions;
 
+import net.napilnik.entitymodel.AbstractController;
+import net.napilnik.entitymodel.ControllerInterface;
+
 /**
  *
  * @author malyshev
+ * @param <ENTITY>
+ * @param <PKCLASS>
  */
-class TheNullTransaction implements TheTransaction {
+public interface TransactedController<ENTITY, PKCLASS> extends ControllerInterface<ENTITY, PKCLASS> {
 
-    public TheNullTransaction() {
-
-    }
-
-    @Override
-    public void commit() throws Exception {
-
-    }
-
-    @Override
-    public void begin() {
-
-    }
-
-    @Override
-    public void rollback() {
-
-    }
-
-    @Override
-    public boolean isActive() {
-        return true;
-    }
+    void setController(AbstractController<ENTITY, PKCLASS> controller);
 }

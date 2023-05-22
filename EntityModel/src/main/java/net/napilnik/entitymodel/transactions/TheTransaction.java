@@ -18,18 +18,26 @@ package net.napilnik.entitymodel.transactions;
 import javax.persistence.EntityManager;
 import javax.persistence.spi.PersistenceUnitTransactionType;
 import static javax.persistence.spi.PersistenceUnitTransactionType.JTA;
+import net.napilnik.entitymodel.AbstractController;
 
 /**
  *
  * @author malyshev
- * @param <T>
+ * @param <ENTITY>
+ * @param <PKCLASS>
  */
-public interface TheTransaction<T> {
+public interface TheTransaction<ENTITY, PKCLASS> extends TransactedController<ENTITY, PKCLASS> {
 
     // usually "java:comp/UserTransaction", but eclipselink expect "java:appserver/TransactionManager" for glassfish target-server
     public static final String JNDI_TRANSACTION_MANAGER = "java:appserver/TransactionManager";
 
-    static TheTransaction create(PersistenceUnitTransactionType transactionType, EntityManager em) {
+    default TheTransaction<ENTITY, PKCLASS> create(AbstractController<ENTITY, PKCLASS> controller, PersistenceUnitTransactionType transactionType, EntityManager em) {
+        TheTransaction<ENTITY, PKCLASS> tx = create(transactionType, em);
+        tx.setController(controller);
+        return tx;
+    }
+
+    private static TheTransaction create(PersistenceUnitTransactionType transactionType, EntityManager em) {
 
         TheTransaction transaction;
         if (transactionType == JTA) {

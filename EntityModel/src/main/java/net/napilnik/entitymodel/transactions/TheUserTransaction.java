@@ -15,6 +15,7 @@
  */
 package net.napilnik.entitymodel.transactions;
 
+import net.napilnik.entitymodel.ATransaction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.InitialContext;
@@ -23,17 +24,19 @@ import javax.persistence.EntityManager;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
+import net.napilnik.entitymodel.AbstractController;
 
 /**
  *
  * @author malyshev
  */
-class TheUserTransaction implements TheTransaction {
+class TheUserTransaction extends ATransaction implements TheTransaction {
 
     private UserTransaction ut;
     private final EntityManager em;
 
     public TheUserTransaction(EntityManager em) {
+        super();
         this.em = em;
     }
 

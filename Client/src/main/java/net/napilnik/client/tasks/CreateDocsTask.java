@@ -43,7 +43,7 @@ public class CreateDocsTask implements ClientTask {
             TheTransaction tx = dc.createTransaction();
             try {
                 for (int i = 0; i < 10; i++) {
-                    dc.create(tx, new Document(app, "tenbyten", "tbt-%d".formatted(new Date().getTime())));
+                    tx.create(new Document(app, "tenbyten", "tbt-%d".formatted(new Date().getTime())));
                 }
 
                 tx.commit();

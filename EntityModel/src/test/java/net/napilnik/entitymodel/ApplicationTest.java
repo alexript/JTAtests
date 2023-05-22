@@ -94,9 +94,9 @@ public class ApplicationTest {
 
             TheTransaction tx = dc.createTransaction();
             try {
-                dc.create(tx, new Document(app, "t", "1"));
-                dc.create(tx, new Document(app, "t", "2"));
-                dc.create(tx, new Document(app, "t", "3"));
+                tx.create(new Document(app, "t", "1"));
+                tx.create(new Document(app, "t", "2"));
+                tx.create(new Document(app, "t", "3"));
                 tx.commit();
                 ac.update(app);
             } catch (Exception ex) {
@@ -160,10 +160,10 @@ public class ApplicationTest {
 
             TheTransaction tx = dc.createTransaction();
             try {
-                dc.create(tx, new Document(app, "t", "1"));
+                tx.create(new Document(app, "t", "1"));
                 docToRemove = new Document(app, "t", "2");
-                dc.create(tx, docToRemove);
-                dc.create(tx, new Document(app, "t", "3"));
+                tx.create(docToRemove);
+                tx.create(new Document(app, "t", "3"));
                 tx.commit();
                 ac.update(app);
             } catch (Exception ex) {

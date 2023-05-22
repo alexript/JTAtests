@@ -38,7 +38,7 @@ import net.napilnik.entitymodel.transactions.TheTransaction;
  * @param <ENTITY> @Entity class
  * @param <PKCLASS> PrimaryKey class for @Entity class
  */
-public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseable {
+public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseable, ControllerInterface<ENTITY, PKCLASS> {
 
     /**
      * Working EntityManager instance.
@@ -56,6 +56,54 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      */
     private boolean incapsulatedEMF;
     private PersistenceUnitTransactionType transactionType;
+    private final TheTransaction<ENTITY, PKCLASS> transactionBuilder = new TheTransaction<ENTITY, PKCLASS>() {
+        //<editor-fold defaultstate="collapsed" desc="unused API">
+        @Override
+        public void commit() throws Exception {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void begin() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void rollback() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean isActive() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void setController(AbstractController controller) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean create(Object entity) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean delete(Object entity) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Object find(Object pk) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean update(Object entity) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+//</editor-fold>
+    };
 
     /**
      * Create CRUD controller on existed EntityManagerFactory.
@@ -97,8 +145,8 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
         }
     }
 
-    private TheTransaction createTx() {
-        return TheTransaction.create(transactionType, em);
+    private TheTransaction<ENTITY, PKCLASS> createTx() {
+        return transactionBuilder.create(this, transactionType, em);
     }
 
     /**
@@ -106,8 +154,8 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      *
      * @return started transaction
      */
-    public final TheTransaction createTransaction() {
-        TheTransaction tr = createTx();
+    public final TheTransaction<ENTITY, PKCLASS> createTransaction() {
+        TheTransaction<ENTITY, PKCLASS> tr = createTx();
         tr.begin();
         return tr;
     }
@@ -118,6 +166,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      * @param entity @Entity object
      * @return true on success
      */
+    @Override
     public final boolean create(ENTITY entity) {
         TheTransaction tr = createTx();
         try {
@@ -138,7 +187,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      * @param tr started transaction
      * @param entity @Entity object
      */
-    public final void create(TheTransaction tr, ENTITY entity) {
+    protected final void create(TheTransaction tr, ENTITY entity) {
         em.persist(entity);
     }
 
@@ -148,6 +197,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      * @param entity persisted @Entity object
      * @return true on success
      */
+    @Override
     public final boolean delete(ENTITY entity) {
         TheTransaction tr = createTx();
         try {
@@ -168,7 +218,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      * @param tr started transaction
      * @param entity @Entity object
      */
-    public void delete(TheTransaction tr, ENTITY entity) {
+    protected void delete(TheTransaction tr, ENTITY entity) {
         entity = em.merge(entity);
         em.remove(entity);
     }
@@ -179,6 +229,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      * @param entity persisted @Entity object
      * @return true on success
      */
+    @Override
     public final boolean update(ENTITY entity) {
         TheTransaction tr = createTx();
         try {
@@ -199,7 +250,7 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
      * @param tr started transaction
      * @param entity @Entity object
      */
-    public final void update(TheTransaction tr, ENTITY entity) {
+    protected final void update(TheTransaction tr, ENTITY entity) {
         em.merge(entity);
     }
 
@@ -218,16 +269,6 @@ public abstract class AbstractController<ENTITY, PKCLASS> implements AutoCloseab
         }
         return null;
     }
-
-    /**
-     * Find persisted @Entity object by PrimaryKey value. Simplified signature
-     * for ENTITY find(Class&lt;ENTITY&gt; entityClass, PKCLASS) pk). Must be
-     * Overrided in extended classes.
-     *
-     * @param pk PrimaryKey value
-     * @return found @Entity object or null
-     */
-    public abstract ENTITY find(PKCLASS pk);
 
     /**
      * Find List of @Entity objects by NamedQuery.

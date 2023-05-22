@@ -199,10 +199,10 @@ public class DocumentTest {
         try (DocumentController c = new DocumentController(emf)) {
             TheTransaction tx = c.createTransaction();
             try {
-                c.create(tx, parentDoc);
-                c.create(tx, childDoc);
+                tx.create(parentDoc);
+                tx.create(childDoc);
                 childDoc.addParentDocument(parentDoc);
-                c.update(tx, childDoc);
+                tx.update(childDoc);
                 tx.commit();
             } catch (Exception ex) {
                 tx.rollback();
@@ -273,11 +273,11 @@ public class DocumentTest {
         try (DocumentController c = new DocumentController(emf)) {
             TheTransaction tx = c.createTransaction();
             try {
-                c.create(tx, parentDoc);
+                tx.create(parentDoc);
                 for (Document child : children) {
-                    c.create(tx, child);
+                    tx.create(child);
                     child.addParentDocument(parentDoc);
-                    c.update(tx, child);
+                    tx.update(child);
                 }
                 tx.commit();
             } catch (Exception ex) {
@@ -306,9 +306,9 @@ public class DocumentTest {
             TheTransaction tx = c.createTransaction();
             try {
                 for (int counter = 0; counter < documentsNumber; counter++) {
-                    c.create(tx, new Document(app, MNEMO_1 + "-mod", "doc-1-" + counter));
-                    c.create(tx, new Document(app, MNEMO_2 + "-mod", "doc-2-" + counter));
-                    c.create(tx, new Document(app, MNEMO_3 + "-mod", "doc-3-" + counter));
+                    tx.create(new Document(app, MNEMO_1 + "-mod", "doc-1-" + counter));
+                    tx.create(new Document(app, MNEMO_2 + "-mod", "doc-2-" + counter));
+                    tx.create(new Document(app, MNEMO_3 + "-mod", "doc-3-" + counter));
                 }
                 tx.commit();
             } catch (Exception ex) {
@@ -334,9 +334,9 @@ public class DocumentTest {
             TheTransaction tx = c.createTransaction();
             try {
                 for (int counter = 0; counter < documentsNumber; counter++) {
-                    c.create(tx, new Document(app, MNEMO_1, "doc-C1-" + counter));
-                    c.create(tx, new Document(app, MNEMO_2, "doc-C2-" + counter));
-                    c.create(tx, new Document(app, MNEMO_3, "doc-C3-" + counter));
+                    tx.create(new Document(app, MNEMO_1, "doc-C1-" + counter));
+                    tx.create(new Document(app, MNEMO_2, "doc-C2-" + counter));
+                    tx.create(new Document(app, MNEMO_3, "doc-C3-" + counter));
                 }
                 tx.commit();
             } catch (Exception ex) {
@@ -362,9 +362,9 @@ public class DocumentTest {
             TheTransaction tx = c.createTransaction();
             try {
                 for (int counter = 0; counter < documentsNumber; counter++) {
-                    c.create(tx, new Document(app, MNEMO_1, "doc-MC1-" + counter));
-                    c.create(tx, new Document(app, MNEMO_2, "doc-MC2-" + counter));
-                    c.create(tx, new Document(app, MNEMO_3, "doc-MC3-" + counter));
+                    tx.create(new Document(app, MNEMO_1, "doc-MC1-" + counter));
+                    tx.create(new Document(app, MNEMO_2, "doc-MC2-" + counter));
+                    tx.create(new Document(app, MNEMO_3, "doc-MC3-" + counter));
                 }
                 tx.commit();
             } catch (Exception ex) {
@@ -393,7 +393,7 @@ public class DocumentTest {
             TheTransaction tr = c.createTransaction();
             try {
                 for (int counter = 0; counter < documentsNumber; counter++) {
-                    c.create(tr, new Document(app, MNEMO_1, "doc-transacted-" + counter));
+                    tr.create(new Document(app, MNEMO_1, "doc-transacted-" + counter));
                 }
                 tr.commit();
             } catch (Exception ex) {
@@ -411,21 +411,21 @@ public class DocumentTest {
     public void testCRUDTransaction() {
         Date startNow = printTestHeader("DocumentTest::testCRUDTransaction");
         try (DocumentController c = new DocumentController(emf)) {
-            TheTransaction tr = c.createTransaction();
+            TheTransaction<Document, Long> tr = c.createTransaction();
             try {
                 Document doc = new Document(app, MNEMO_1, "doc-transacted-crud");
-                c.create(tr, doc);
+                tr.create(doc);
                 final Long id = doc.getId();
-                Document foundDoc = c.find(id);
+                Document foundDoc = tr.find(id);
                 assertNotNull(foundDoc);
                 assertEquals(id, foundDoc.getId());
                 foundDoc.setCode("doc-transacted-crud-updated");
-                c.update(tr, foundDoc);
-                c.delete(tr, doc);
-                Document notFoundDoc = c.find(id);
+                tr.update(foundDoc);
+                tr.delete(doc);
+                Document notFoundDoc = tr.find(id);
                 assertNull(notFoundDoc);
                 tr.commit();
-            } catch (Throwable ex) {
+            } catch (Exception ex) {
                 tr.rollback();
                 fail(ex);
             }

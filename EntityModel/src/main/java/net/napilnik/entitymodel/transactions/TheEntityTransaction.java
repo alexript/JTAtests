@@ -15,19 +15,22 @@
  */
 package net.napilnik.entitymodel.transactions;
 
+import net.napilnik.entitymodel.ATransaction;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
+import net.napilnik.entitymodel.AbstractController;
 
 /**
  *
  * @author malyshev
  */
-class TheEntityTransaction implements TheTransaction<EntityManager> {
+class TheEntityTransaction extends ATransaction implements TheTransaction {
 
     private final EntityManager em;
     private EntityTransaction transaction;
 
     public TheEntityTransaction(EntityManager em) {
+        super();
         this.em = em;
     }
 
