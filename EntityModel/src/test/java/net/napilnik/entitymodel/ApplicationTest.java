@@ -193,4 +193,54 @@ public class ApplicationTest {
 
         printTestFooter("ApplicationTest::deleteAppDocument", startNow);
     }
+
+     @Test
+    public void deleteAppAllDocuments() {
+        Date startNow = printTestHeader("ApplicationTest::deleteAppAllDocuments");
+        final String appMnemo = "delAppAllDocs";
+
+        // create application
+        Application app = new Application(appMnemo);
+        try (ApplicationController ac = new ApplicationController(emf)) {
+            ac.create(app);
+        }
+
+
+        // creapte application's documents
+        try (ApplicationController ac = new ApplicationController(emf); DocumentController dc = new DocumentController(emf)) {
+
+            TheTransaction tx = dc.createTransaction();
+            try {
+                tx.create(new Document(app, "t", "1"));
+                tx.create(new Document(app, "t", "2"));
+                tx.create(new Document(app, "t", "3"));
+                tx.commit();
+                ac.update(app);
+            } catch (Exception ex) {
+                tx.rollback();
+                fail(ex);
+            }
+        }
+
+
+
+        try (ApplicationController ac = new ApplicationController(emf)) {
+
+            try {
+                app.getDocuments().clear();
+                ac.update(app);
+            } catch (Exception ex) {
+                fail(ex);
+            }
+        }
+
+        // test
+        try (ApplicationController ac = new ApplicationController(emf)) {
+            Application foundApp = ac.find(appMnemo);
+            Collection<Document> documents = foundApp.getDocuments();
+            Assertions.assertEquals(0, documents.size());
+        }
+
+        printTestFooter("ApplicationTest::deleteAppAllDocuments", startNow);
+    }
 }
